@@ -1,0 +1,29 @@
+<resources>
+    <string name="home">Home</string>
+    <string name="week">Week</string>
+    <string name="city">City</string>
+    <string name="need_location_message"> We need your location to show the weather in your city.</string>
+    <string name="give_permission">Give permission</string>
+    <string name="select_city">Select city manually</string>
+    <string name="weather_detail_temp_hl">H/L</string>
+    <string name="weather_detail_clouds">CLOUDS</string>
+    <string name="weather_detail_wind">WIND</string>
+    <string name="weather_detail_humidity">HUMIDITY</string>
+    <string name="today">Today</string>
+    <string name="feels_like">Feels like</string>
+    <string name="high">High</string>
+    <string name="low">Low</string>
+    <string name="no_city_selected">You have to select a city</string>
+    <string name="error_loading_week">Error loading weekly forecast</string>
+    <string name="weekly_forecast">Weekly Forecast</string>
+    <string name="select_city_title">Select city</string>
+    <string name="city_hint">Enter city name...</string>
+    <string name="results"> RESULTS</string>
+    <string name="current_city">Current city</string>
+    <string name="use_current_location">Use your current location</string>
+    <string name="try_again">Try again</string>
+    <string name="no_connection">No connection</string>
+    <string name="no_connection_message">Please check your internet connection and try again</string>
+    <string name="search">Search</string>
+
+</resources>
