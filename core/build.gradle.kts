@@ -1,8 +1,6 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
@@ -11,11 +9,19 @@ android {
     namespace = "com.anahjanes.core"
     compileSdk = 36
 
+    buildFeatures {
+        buildConfig = true
+    }
     defaultConfig {
         minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
 
+        buildConfigField(
+            "String",
+            "OPEN_WEATHER_API_KEY",
+            "\"${project.findProperty("OPEN_WEATHER_API_KEY")}\""
+        )
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -48,6 +54,7 @@ dependencies {
     // Hilt para repositorios y use cases
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    implementation(libs.androidx.datastore.preferences)
 
     // Networking / data
     implementation(libs.retrofit)
