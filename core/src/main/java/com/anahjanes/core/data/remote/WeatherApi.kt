@@ -10,7 +10,7 @@ interface WeatherApi {
     suspend fun getCurrentWeatherByCity(
         @Query("q") city: String,
         @Query("units") units: String = "metric",
-        @Query("lang") lang: String = "es"
+        @Query("lang") lang: String = "en"
     ): CurrentWeatherDto
 
     // 2) Tiempo actual (hoy) por coordenadas (útil para "current city")
@@ -19,7 +19,7 @@ interface WeatherApi {
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
         @Query("units") units: String = "metric",
-        @Query("lang") lang: String = "es"
+        @Query("lang") lang: String = "en"
     ): CurrentWeatherDto
 
     // 3) Forecast semanal (One Call 3.0) por coordenadas
@@ -30,7 +30,7 @@ interface WeatherApi {
         @Query("lon") lon: Double,
         @Query("exclude") exclude: String = "minutely,hourly,alerts",
         @Query("units") units: String = "metric",
-        @Query("lang") lang: String = "es"
+        @Query("lang") lang: String = "en"
     ): OneCallDto
 
 

@@ -62,11 +62,15 @@ dependencies {
 
     // Hilt para ViewModels
     implementation(libs.hilt.android)
+    implementation(libs.androidx.ui)
+    implementation(libs.play.services.location)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
     // Coil para imágenes
     implementation(libs.coil.compose)
+    implementation(libs.kotlinx.coroutines.play.services)
+
 
     // --- Tests ---
     testImplementation(libs.junit)

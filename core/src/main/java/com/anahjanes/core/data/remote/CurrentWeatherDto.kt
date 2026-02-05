@@ -6,9 +6,12 @@ data class CurrentWeatherDto(
     val weather: List<WeatherDescriptionDto>,
     val main: MainWeatherDto,
     val wind: WindDto,
-    val name: String, // nombre de la ciudad
-    val dt: Long
+    val name: String,
+    val dt: Long,
+    val clouds: CloudsDto?
 )
+data class CloudsDto(val all: Int)
+
 
 data class CoordDto(
     val lon: Double,
