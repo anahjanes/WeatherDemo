@@ -11,4 +11,10 @@
     <string name="weather_detail_humidity">HUMIDITY</string>
     <string name="today">Today</string>
     <string name="feels_like">Feels like</string>
+    <string name="high">High</string>
+    <string name="low">Low</string>
+    <string name="no_city_selected">You have to select a city</string>
+    <string name="error_loading_week">Error loading weekly forecast</string>
+    <string name="weekly_forecast">Weekly Forecast</string>
+
 </resources>

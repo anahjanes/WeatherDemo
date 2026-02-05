@@ -1,37 +1,29 @@
 package com.anahjanes.core.data.remote
 
+import com.anahjanes.core.data.remote.dto.CurrentWeatherDto
+import com.anahjanes.core.data.remote.dto.GeoCityDto
+import com.anahjanes.core.data.remote.dto.WeekWeatherDto
 import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface WeatherApi {
 
-    // 1) Tiempo actual (hoy) por ciudad
-    @GET("data/2.5/weather")
-    suspend fun getCurrentWeatherByCity(
-        @Query("q") city: String,
-        @Query("units") units: String = "metric",
-        @Query("lang") lang: String = "en"
-    ): CurrentWeatherDto
-
-    // 2) Tiempo actual (hoy) por coordenadas (útil para "current city")
     @GET("data/2.5/weather")
     suspend fun getCurrentWeatherByCoords(
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
-        @Query("units") units: String = "metric",
-        @Query("lang") lang: String = "en"
+        @Query("units") units: String = WeatherApiConfig.UNITS,
+        @Query("lang") lang: String = WeatherApiConfig.LANG
     ): CurrentWeatherDto
 
-    // 3) Forecast semanal (One Call 3.0) por coordenadas
-    // Excluimos minutely/hourly/alerts para ir a lo necesario.
-    @GET("data/3.0/onecall")
-    suspend fun getWeeklyForecastByCoords(
+
+    @GET("data/2.5/forecast")
+    suspend fun getSevenDayForecastByCoords(
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
-        @Query("exclude") exclude: String = "minutely,hourly,alerts",
-        @Query("units") units: String = "metric",
-        @Query("lang") lang: String = "en"
-    ): OneCallDto
+        @Query("units") units: String = WeatherApiConfig.UNITS,
+        @Query("lang") lang: String = WeatherApiConfig.LANG
+    ): WeekWeatherDto
 
 
     @GET("geo/1.0/direct")

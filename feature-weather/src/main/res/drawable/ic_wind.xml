@@ -3,32 +3,43 @@
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
+
+    <!-- Ráfaga superior -->
     <path
         android:fillColor="#00000000"
-        android:pathData="M9.5,12H21.5"
-        android:strokeWidth="2"
         android:strokeColor="#000000"
+        android:strokeWidth="2"
         android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
+        android:strokeLineJoin="round"
+        android:pathData="
+            M3,9
+            H14
+            C16,9 17,8 17,7
+            C17,6 16,5 15,5"/>
+
+    <!-- Ráfaga central -->
     <path
         android:fillColor="#00000000"
-        android:pathData="M2.5,12H5.5"
-        android:strokeWidth="2"
         android:strokeColor="#000000"
+        android:strokeWidth="2"
         android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
+        android:strokeLineJoin="round"
+        android:pathData="
+            M3,13
+            H18
+            C20,13 21,14 21,15
+            C21,16 20,17 19,17"/>
+
+    <!-- Ráfaga inferior -->
     <path
         android:fillColor="#00000000"
-        android:pathData="M7,15H2.5C2.5,15 4.5,12 2.5,9H7"
-        android:strokeWidth="2"
         android:strokeColor="#000000"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M17,9H21.5C21.5,9 19.5,12 21.5,15H17"
         android:strokeWidth="2"
-        android:strokeColor="#000000"
         android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
+        android:strokeLineJoin="round"
+        android:pathData="
+            M3,17
+            H11
+            C13,17 14,18 14,19
+            C14,20 13,21 12,21"/>
 </vector>

@@ -3,20 +3,17 @@ package com.anahjanes.feature_weather.home
 import com.anahjanes.core.data.WeatherRepository
 import com.anahjanes.core.data.local.SelectedCity
 import com.anahjanes.core.data.remote.AppResult
-import com.anahjanes.core.data.remote.CloudsDto
-import com.anahjanes.core.data.remote.CoordDto
-import com.anahjanes.core.data.remote.CurrentWeatherDto
+import com.anahjanes.core.data.remote.dto.CloudsDto
+import com.anahjanes.core.data.remote.dto.CoordDto
+import com.anahjanes.core.data.remote.dto.CurrentWeatherDto
 import com.anahjanes.core.data.remote.ErrorType
-import com.anahjanes.core.data.remote.MainWeatherDto
-import com.anahjanes.core.data.remote.WeatherDescriptionDto
-import com.anahjanes.core.data.remote.WindDto
+import com.anahjanes.core.data.remote.dto.MainWeatherDto
+import com.anahjanes.core.data.remote.dto.WeatherDescriptionDto
+import com.anahjanes.core.data.remote.dto.WindDto
 import com.anahjanes.feature_weather.MainDispatcherRule
-import com.anahjanes.feature_weather.home.HomeUiState
-import com.anahjanes.feature_weather.home.HomeViewModel
 import com.anahjanes.feature_weather.location.LatLon
 import com.anahjanes.feature_weather.location.LocationDataSource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
@@ -27,7 +24,6 @@ import org.mockito.kotlin.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
-
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 

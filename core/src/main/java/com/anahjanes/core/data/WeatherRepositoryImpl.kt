@@ -3,11 +3,12 @@ package com.anahjanes.core.data
 import com.anahjanes.core.data.local.CityPreferencesDataSource
 import com.anahjanes.core.data.local.SelectedCity
 import com.anahjanes.core.data.remote.AppResult
-import com.anahjanes.core.data.remote.CurrentWeatherDto
+import com.anahjanes.core.data.remote.dto.CurrentWeatherDto
 import com.anahjanes.core.data.remote.ErrorType
-import com.anahjanes.core.data.remote.GeoCityDto
-import com.anahjanes.core.data.remote.OneCallDto
+import com.anahjanes.core.data.remote.dto.GeoCityDto
+import com.anahjanes.core.data.remote.dto.ForecastItem
 import com.anahjanes.core.data.remote.WeatherApi
+import com.anahjanes.core.data.remote.dto.dayKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
@@ -28,7 +29,7 @@ private inline fun <T> safeCall(block: () -> T): AppResult<T> =
 
 class WeatherRepositoryImpl @Inject constructor(
     private val api: WeatherApi,
-    private val cityPreferences: CityPreferencesDataSource
+    private val cityPreferences: CityPreferencesDataSource,
 ) : WeatherRepository {
 
 
@@ -48,34 +49,21 @@ class WeatherRepositoryImpl @Inject constructor(
             ?: throw IllegalStateException("No hay ciudad seleccionada")
 
 
-    override suspend fun getToday(): AppResult<CurrentWeatherDto> =
+
+    override suspend fun getWeek(): AppResult<Map<String, List<ForecastItem>>> =
         safeCall {
             val city = requireSelectedCity()
-            api.getCurrentWeatherByCoords(lat = city.lat, lon = city.lon)
+            val response = api.getSevenDayForecastByCoords(city.lat, city.lon)
+
+            response.list
+                .filter { it.weather.isNotEmpty() }
+                .groupBy { it.dayKey() }
+                .toSortedMap()
+                .entries
+                .take(7)
+                .associate { it.toPair() }
         }
 
-    override suspend fun getWeek(): AppResult<OneCallDto> =
-        safeCall {
-            val city = requireSelectedCity()
-            api.getWeeklyForecastByCoords(lat = city.lat, lon = city.lon)
-        }
-
-
-
-    override suspend fun getTodayByCity(cityName: String): AppResult<CurrentWeatherDto> =
-        safeCall {
-            val today = api.getCurrentWeatherByCity(city = cityName)
-
-            cityPreferences.saveCity(
-                SelectedCity(
-                    name = today.name,
-                    lat = today.coord.lat,
-                    lon = today.coord.lon
-                )
-            )
-
-            today
-        }
 
     override suspend fun getTodayByCoords(lat: Double, lon: Double): AppResult<CurrentWeatherDto> =
         safeCall {
@@ -92,12 +80,6 @@ class WeatherRepositoryImpl @Inject constructor(
             today
         }
 
-    override suspend fun getWeekByCoords(lat: Double, lon: Double): AppResult<OneCallDto> =
-        safeCall {
-            api.getWeeklyForecastByCoords(lat = lat, lon = lon)
-        }
-
-    // ───────────── Search ─────────────
 
     override suspend fun searchCities(query: String, limit: Int): AppResult<List<GeoCityDto>> =
         safeCall { api.searchCities(query = query, limit = limit) }

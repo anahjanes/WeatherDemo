@@ -1,4 +1,4 @@
-package com.anahjanes.core.data.remote
+package com.anahjanes.core.data.remote.dto
 
 
 data class GeoCityDto(

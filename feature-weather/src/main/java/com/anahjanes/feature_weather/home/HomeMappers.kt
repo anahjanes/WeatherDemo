@@ -1,25 +1,21 @@
 package com.anahjanes.feature_weather.home
 
-import android.os.Build
-import androidx.annotation.RequiresApi
-import com.anahjanes.core.data.remote.CurrentWeatherDto
-import com.anahjanes.feature_weather.model.HomeWeatherUiModel
+import com.anahjanes.core.data.remote.dto.CurrentWeatherDto
+import com.anahjanes.feature_weather.home.model.HomeUiModel
+import com.anahjanes.feature_weather.utils.toWeatherIconUrl
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
 
 
-fun CurrentWeatherDto.toHomeUiModel(): HomeWeatherUiModel {
+fun CurrentWeatherDto.toHomeUiModel(): HomeUiModel {
     val w = weather.firstOrNull()
-    val icon = w?.icon?.let { "https://openweathermap.org/img/wn/$it@4x.png" }
+    val icon = w?.icon?.toWeatherIconUrl()
 
     val dateText = SimpleDateFormat(
         "EEEE, d MMM",
-        Locale.ENGLISH   // o Locale("es", "ES")
+        Locale.ENGLISH
     ).format(Date(dt * 1000))
 
     val temp = main.temp.roundToInt()
@@ -31,12 +27,12 @@ fun CurrentWeatherDto.toHomeUiModel(): HomeWeatherUiModel {
     val humidityPct = main.humidity
     val windKmh = (wind.speed * 3.6).roundToInt()
 
-    return HomeWeatherUiModel(
+    return HomeUiModel(
         city = name,
         dateText = dateText,
         temperature = "${temp}°",
         condition = w?.description?.replaceFirstChar { it.uppercase() } ?: "-",
-        feelsLike = "Feels like: ${feels}°C",
+        feelsLike = "${feels}°C",
         iconUrl = icon,
         tempMax = "${max}°",
         tempMin = "${min}°",

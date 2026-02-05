@@ -1,6 +1,6 @@
-package com.anahjanes.feature_weather.model
+package com.anahjanes.feature_weather.home.model
 
-data class HomeWeatherUiModel(
+data class HomeUiModel(
     val city: String,
     val dateText: String,          // "Monday, 24 May"
     val temperature: String,       // "12°"

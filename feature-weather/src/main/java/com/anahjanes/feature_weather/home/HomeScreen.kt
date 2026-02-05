@@ -44,12 +44,27 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.anahjanes.feature_weather.R
 import com.anahjanes.feature_weather.components.ErrorScreen
 import com.anahjanes.feature_weather.components.ProgressScreen
-import com.anahjanes.feature_weather.model.HomeWeatherUiModel
+import com.anahjanes.feature_weather.home.model.HomeUiModel
+import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 
 @Composable
 fun HomeScreen(
-    onOpenCity: () -> Unit={},
-    viewModel: HomeViewModel = hiltViewModel()
+    onOpenCity: () -> Unit = {},
+    viewModel: HomeViewModel = hiltViewModel(),
+) {
+    WeatherTheme {
+        HomeScreenContent(
+            onOpenCity = onOpenCity,
+            viewModel = viewModel
+        )
+    }
+}
+
+
+@Composable
+fun HomeScreenContent(
+    onOpenCity: () -> Unit = {},
+    viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val uiState = viewModel.uiState.collectAsState().value
@@ -100,19 +115,19 @@ fun HomeScreen(
     when (uiState) {
         is HomeUiState.Success -> WeatherSuccessScreen(weather = uiState.weather)
         is HomeUiState.Loading -> ProgressScreen()
-        is HomeUiState.Error ->ErrorScreen(uiState.message)
-            /*ErrorScreen(
-            message = uiState.message,
-            onRetry = {
-                if (hasLocationPermission) viewModel.loadWeather()
-                else permissionLauncher.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    )
+        is HomeUiState.Error -> ErrorScreen(uiState.message)
+        /*ErrorScreen(
+        message = uiState.message,
+        onRetry = {
+            if (hasLocationPermission) viewModel.loadWeather()
+            else permissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
                 )
-            },
-            onChooseCity = onOpenCity*/
+            )
+        },
+        onChooseCity = onOpenCity*/
         else -> {
 
             if (permissionDenied) {
@@ -133,24 +148,26 @@ fun HomeScreen(
 
 @Composable
 fun WeatherSuccessScreen(
-    weather: HomeWeatherUiModel,
+    weather: HomeUiModel,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
+            color = MaterialTheme.colorScheme.onBackground,
             text = weather.city,
             style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold)
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = weather.dateText,
-            style = MaterialTheme.typography.bodyLarge.copy(color = Color.Gray)
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
         )
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -184,7 +201,7 @@ fun CurrentWeatherCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF4A90E2))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
     ) {
         Column(
             modifier = Modifier
@@ -195,7 +212,7 @@ fun CurrentWeatherCard(
             Box(
                 modifier = Modifier
                     .size(100.dp)
-                    .background(color = Color.White, shape = RoundedCornerShape(16.dp)),
+                    .background(color = Color.Transparent, shape = RoundedCornerShape(16.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 if (iconUrl != null) {
@@ -218,15 +235,19 @@ fun CurrentWeatherCard(
 
             Text(
                 text = condition,
-                style = MaterialTheme.typography.headlineSmall.copy(color = Color.White)
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onPrimary
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = feelsLike,
-                style = MaterialTheme.typography.bodyLarge.copy(color = Color.White.copy(alpha = 0.8f))
-            )
+                text = stringResource(R.string.feels_like) + " " + feelsLike,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)            )
+            Spacer(modifier = Modifier.height(4.dp))
+
+
         }
     }
 }
@@ -287,7 +308,7 @@ fun WeatherDetailItem(
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -309,12 +330,14 @@ fun WeatherDetailItem(
             Column {
                 Text(
                     text = label,
-                    style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = value,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -324,13 +347,14 @@ fun WeatherDetailItem(
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
+    WeatherTheme() {
     WeatherSuccessScreen(
-        weather = HomeWeatherUiModel(
+        weather = HomeUiModel(
             city = "Barcelona",
             dateText = stringResource(id = R.string.today),
             temperature = "25°C",
             condition = "Sunny",
-            feelsLike = stringResource(id = R.string.feels_like, "24°C"),
+            feelsLike = "10",
             iconUrl = null,
             tempMax = "28°C",
             tempMin = "22°C",
@@ -338,5 +362,7 @@ fun HomeScreenPreview() {
             wind = "5 km/h",
             humidity = "60%"
         )
+
     )
+}
 }
