@@ -1,0 +1,79 @@
+package com.anahjanes.feature_weather.home
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.anahjanes.feature_weather.R
+import com.anahjanes.feature_weather.ui.theme.WeatherTheme
+
+
+@Composable
+fun WeatherDetailsGrid(
+    tempMax: String,
+    tempMin: String,
+    clouds: String,
+    wind: String,
+    humidity: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            WeatherDetailItem(
+                modifier = Modifier.weight(1f),
+                icon = R.drawable.ic_temp,
+                label = stringResource(id = R.string.weather_detail_temp_hl),
+                value = "$tempMax / $tempMin",
+                iconBackgroundColor = Color(0xFFFFDDC1)
+            )
+            WeatherDetailItem(
+                modifier = Modifier.weight(1f),
+                icon = R.drawable.ic_cloud,
+                label = stringResource(id = R.string.weather_detail_clouds),
+                value = clouds,
+                iconBackgroundColor = Color(0xFFC9E8FF)
+            )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            WeatherDetailItem(
+                modifier = Modifier.weight(1f),
+                icon = R.drawable.ic_wind,
+                label = stringResource(id = R.string.weather_detail_wind),
+                value = wind,
+                iconBackgroundColor = Color(0xFFC8F7E8)
+            )
+            WeatherDetailItem(
+                modifier = Modifier.weight(1f),
+                icon = R.drawable.ic_humidity,
+                label = stringResource(id = R.string.weather_detail_humidity),
+                value = humidity,
+                iconBackgroundColor = Color(0xFFE1DFFF)
+            )
+        }
+    }
+}
+
+@Preview(
+    name = "Small phone",
+    widthDp = 320,
+    heightDp = 568,
+    showBackground = true
+)
+@Composable
+fun WeatherDetailsGridPreview() {
+    WeatherTheme {
+        WeatherDetailsGrid(
+            tempMax = "25°C",
+            tempMin = "15°C",
+            clouds = "25%",
+            wind = "10 km/h",
+            humidity = "50%"
+        )
+    }
+}

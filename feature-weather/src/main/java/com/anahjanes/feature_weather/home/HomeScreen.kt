@@ -1,9 +1,5 @@
 package com.anahjanes.feature_weather.home
 
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.anahjanes.core.data.local.SelectedCity
 import com.anahjanes.feature_weather.R
 import com.anahjanes.feature_weather.components.ErrorScreen
 import com.anahjanes.feature_weather.components.ProgressScreen
@@ -50,48 +49,49 @@ import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 
 @Composable
 fun HomeScreen(
-    onOpenCity: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
+    onOpenCity: () -> Unit,
 ) {
+    val uiState = viewModel.uiState.collectAsState().value
+    val selectedCity by viewModel.selectedCity.collectAsState()
+
     WeatherTheme {
         HomeScreenContent(
+            uiState = uiState,
             onOpenCity = onOpenCity,
-            viewModel = viewModel
+            loadWeather = { viewModel.loadWeather() },
+            selectedCity = selectedCity
         )
     }
 }
 @Composable
 fun HomeScreenContent(
-    onOpenCity: () -> Unit = {},
-    viewModel: HomeViewModel = hiltViewModel(),
+    uiState: HomeUiState,
+    onOpenCity: () -> Unit,
+    loadWeather: () -> Unit,
+    selectedCity: SelectedCity?,
 ) {
-    val uiState = viewModel.uiState.collectAsState().value
-
     val locationPermission = rememberLocationPermissionHandler {
-        viewModel.loadWeather()
+        loadWeather()
     }
 
-    LaunchedEffect(Unit) {
-        locationPermission.requestPermission()
+    LaunchedEffect(selectedCity) {
+        if (selectedCity == null) {
+            locationPermission.requestPermission()
+        } else {
+            loadWeather()
+        }
     }
 
     when (uiState) {
-        is HomeUiState.Success ->
-            WeatherSuccessScreen(weather = uiState.weather)
-
-        is HomeUiState.Loading ->
-            ProgressScreen()
-
-        is HomeUiState.Error ->
-            ErrorScreen(uiState.message)
-
+        is HomeUiState.Success -> WeatherSuccessScreen(weather = uiState.weather)
+        is HomeUiState.Loading -> ProgressScreen()
+        is HomeUiState.Error -> ErrorScreen { loadWeather() }
         else -> {
-            if (locationPermission.permissionDenied) {
+            if (selectedCity == null && locationPermission.permissionDenied) {
                 PermissionFallback(
                     onOpenCity = onOpenCity,
-                    onRequestPermissionAgain = {
-                        locationPermission.requestPermission()
-                    }
+                    onRequestPermissionAgain = { locationPermission.requestPermission() }
                 )
             } else {
                 ProgressScreen()
@@ -109,9 +109,11 @@ fun WeatherSuccessScreen(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         Text(
             color = MaterialTheme.colorScheme.onBackground,
             text = weather.city,
@@ -144,180 +146,26 @@ fun WeatherSuccessScreen(
     }
 }
 
-@Composable
-fun CurrentWeatherCard(
-    temperature: String,
-    condition: String,
-    feelsLike: String,
-    iconUrl: String?,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .background(color = Color.Transparent, shape = RoundedCornerShape(16.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                if (iconUrl != null) {
-                    coil.compose.AsyncImage(
-                        model = iconUrl,
-                        contentDescription = condition,
-                        modifier = Modifier.size(84.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = temperature,
-                fontSize = 86.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Light
-            )
-
-            Text(
-                text = condition,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = stringResource(R.string.feels_like) + " " + feelsLike,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onPrimary            )
-            Spacer(modifier = Modifier.height(4.dp))
-
-
-        }
-    }
-}
-
-@Composable
-fun WeatherDetailsGrid(
-    tempMax: String,
-    tempMin: String,
-    clouds: String,
-    wind: String,
-    humidity: String,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            WeatherDetailItem(
-                modifier = Modifier.weight(1f),
-                icon = R.drawable.ic_temp,
-                label = stringResource(id = R.string.weather_detail_temp_hl),
-                value = "$tempMax / $tempMin",
-                iconBackgroundColor = Color(0xFFFFDDC1)
-            )
-            WeatherDetailItem(
-                modifier = Modifier.weight(1f),
-                icon = R.drawable.ic_cloud,
-                label = stringResource(id = R.string.weather_detail_clouds),
-                value = clouds,
-                iconBackgroundColor = Color(0xFFC9E8FF)
-            )
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            WeatherDetailItem(
-                modifier = Modifier.weight(1f),
-                icon = R.drawable.ic_wind,
-                label = stringResource(id = R.string.weather_detail_wind),
-                value = wind,
-                iconBackgroundColor = Color(0xFFC8F7E8)
-            )
-            WeatherDetailItem(
-                modifier = Modifier.weight(1f),
-                icon = R.drawable.ic_humidity,
-                label = stringResource(id = R.string.weather_detail_humidity),
-                value = humidity,
-                iconBackgroundColor = Color(0xFFE1DFFF)
-            )
-        }
-    }
-}
-
-@Composable
-fun WeatherDetailItem(
-    modifier: Modifier = Modifier,
-    icon: Int,
-    label: String,
-    value: String,
-    iconBackgroundColor: Color,
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(color = iconBackgroundColor, shape = RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = icon),
-                    contentDescription = label,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = label,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
     WeatherTheme() {
-    WeatherSuccessScreen(
-        weather = HomeUiModel(
-            city = "Barcelona",
-            dateText = stringResource(id = R.string.today),
-            temperature = "25°C",
-            condition = "Sunny",
-            feelsLike = "10",
-            iconUrl = null,
-            tempMax = "28°C",
-            tempMin = "22°C",
-            clouds = "75%",
-            wind = "5 km/h",
-            humidity = "60%"
-        )
+        WeatherSuccessScreen(
+            weather = HomeUiModel(
+                city = "Barcelona",
+                dateText = stringResource(id = R.string.today),
+                temperature = "25°C",
+                condition = "Sunny",
+                feelsLike = "10",
+                iconUrl = null,
+                tempMax = "28°C",
+                tempMin = "22°C",
+                clouds = "75%",
+                wind = "5 km/h",
+                humidity = "60%"
+            )
 
-    )
-}
+        )
+    }
 }

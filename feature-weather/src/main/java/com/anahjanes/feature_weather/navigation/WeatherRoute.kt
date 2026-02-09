@@ -31,8 +31,14 @@ fun WeatherRoot() {
             onBack = { backStack.removeLastOrNull() },
             modifier = Modifier.padding(padding),
             entryProvider = entryProvider {
-                entry<Home> { HomeScreen() }
-                entry<WeatherWeek> { WeekScreen() }
+                entry<Home> { HomeScreen{
+                    backStack.clear()
+                    backStack.add(City)
+                } }
+                entry<WeatherWeek> { WeekScreen(){
+                    backStack.clear()
+                    backStack.add(City)
+                } }
                 entry<City> { CityScreen() {
                     backStack.clear()
                     backStack.add(Home)

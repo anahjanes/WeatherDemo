@@ -21,6 +21,9 @@
     <string name="results"> RESULTS</string>
     <string name="current_city">Current city</string>
     <string name="use_current_location">Use your current location</string>
+    <string name="try_again">Try again</string>
+    <string name="no_connection">No connection</string>
+    <string name="no_connection_message">Please check your internet connection and try again</string>
 
 
 

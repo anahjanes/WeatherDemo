@@ -18,50 +18,68 @@ import com.anahjanes.feature_weather.R
 import com.anahjanes.feature_weather.navigation.City
 import com.anahjanes.feature_weather.navigation.Home
 import com.anahjanes.feature_weather.navigation.WeatherWeek
+import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 
 @Composable
 fun WeatherBottomBar(
     current: Any?,
     onHomeClick: () -> Unit,
     onWeekClick: () -> Unit,
-    onCityClick: () -> Unit
+    onCityClick: () -> Unit,
 ) {
-    NavigationBar {
-        NavigationBarItem(
-            selected = current is Home,
-            onClick = onHomeClick,
-            icon = { Icon(Icons.Default.Home, contentDescription = stringResource(id = R.string.home)) },
-            label = { Text(stringResource(id = R.string.home)) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = Color.Gray,
-                unselectedTextColor = Color.Gray
+    WeatherTheme {
+        NavigationBar {
+            NavigationBarItem(
+                selected = current is Home,
+                onClick = onHomeClick,
+                icon = {
+                    Icon(
+                        Icons.Default.Home,
+                        contentDescription = stringResource(id = R.string.home)
+                    )
+                },
+                label = { Text(stringResource(id = R.string.home)) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = Color.Gray,
+                    unselectedTextColor = Color.Gray
+                )
             )
-        )
-        NavigationBarItem(
-            selected = current is WeatherWeek,
-            onClick = onWeekClick,
-            icon = { Icon(Icons.Default.DateRange, contentDescription = stringResource(id = R.string.week)) },
-            label = { Text(stringResource(id = R.string.week)) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = Color.Gray,
-                unselectedTextColor = Color.Gray
+            NavigationBarItem(
+                selected = current is WeatherWeek,
+                onClick = onWeekClick,
+                icon = {
+                    Icon(
+                        Icons.Default.DateRange,
+                        contentDescription = stringResource(id = R.string.week)
+                    )
+                },
+                label = { Text(stringResource(id = R.string.week)) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = Color.Gray,
+                    unselectedTextColor = Color.Gray
+                )
             )
-        )
-        NavigationBarItem(
-            selected = current is City,
-            onClick = onCityClick,
-            icon = { Icon(Icons.Default.Place, contentDescription = stringResource(id = R.string.city)) },
-            label = { Text(stringResource(id = R.string.city)) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = Color.Gray,
-                unselectedTextColor = Color.Gray
+            NavigationBarItem(
+                selected = current is City,
+                onClick = onCityClick,
+                icon = {
+                    Icon(
+                        Icons.Default.Place,
+                        contentDescription = stringResource(id = R.string.city)
+                    )
+                },
+                label = { Text(stringResource(id = R.string.city)) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = Color.Gray,
+                    unselectedTextColor = Color.Gray
+                )
             )
-        )
+        }
     }
 }

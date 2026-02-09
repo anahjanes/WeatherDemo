@@ -36,40 +36,55 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.anahjanes.feature_weather.R
+import com.anahjanes.feature_weather.components.ErrorScreen
 import com.anahjanes.feature_weather.components.ProgressScreen
+import com.anahjanes.feature_weather.components.rememberLocationPermissionHandler
+import com.anahjanes.feature_weather.home.PermissionFallback
 import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 import com.anahjanes.feature_weather.week.model.WeekUiModel
+import java.security.Permission
 
 @Composable
 fun WeekScreen(
     viewModel: WeekViewModel = hiltViewModel(),
+    onOpenCity:()-> Unit
 ) {
     WeatherTheme {
         WeekScreenContent(
-            viewModel = viewModel
+            viewModel = viewModel,onOpenCity
         )
     }
 }
 
 
 @Composable
-fun WeekScreenContent(viewModel: WeekViewModel = hiltViewModel()) {
+fun WeekScreenContent(viewModel: WeekViewModel = hiltViewModel(), onOpenCity: () -> Unit) {
     LaunchedEffect(Unit) {
         viewModel.loadWeek()
     }
     val state = viewModel.uiState.collectAsState().value
-
+    val locationPermission = rememberLocationPermissionHandler {
+        viewModel.loadWeek()
+    }
     when (state) {
         WeekUiState.Idle,
         WeekUiState.Loading,
             -> ProgressScreen()
 
         is WeekUiState.Error -> {
-            val message = when (state.message) {
-                ErrorWeek.NO_CITY_SELECTED -> stringResource(R.string.no_city_selected)
-                ErrorWeek.LOAD_WEEK_ERROR -> stringResource(R.string.error_loading_week)
+            when (state.message) {
+                ErrorWeek.NO_CITY_SELECTED -> {
+                    PermissionFallback(
+                        onOpenCity = onOpenCity,
+                        onRequestPermissionAgain = {
+                            locationPermission.requestPermission()
+                        }
+                    )
+                }
+
+                ErrorWeek.LOAD_WEEK_ERROR -> ErrorScreen { viewModel.loadWeek() }
             }
-            Text(text = message, color = Color.Red)
+
         }
 
         is WeekUiState.Success -> {
@@ -110,7 +125,8 @@ fun WeekContent(
                 text = city,
                 fontWeight = FontWeight.Bold,
                 fontSize = 17.sp
-            )        }
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 

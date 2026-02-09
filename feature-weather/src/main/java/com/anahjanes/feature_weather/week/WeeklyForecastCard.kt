@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,12 +66,12 @@ fun WeeklyForecastCard(
 
             Spacer(modifier = Modifier.width(18.dp))
 
-            // 📅 Día + descripción (más grande y más legible)
             Column(modifier = Modifier.weight(1f)) {
 
                 Text(
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     text = forecast.day,
-                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 20.sp,
                     lineHeight = 24.sp
@@ -80,7 +81,6 @@ fun WeeklyForecastCard(
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = forecast.date,
-                        style = MaterialTheme.typography.bodyMedium,
                         fontSize = 14.sp,
                         lineHeight = 18.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -124,8 +124,13 @@ fun WeeklyForecastCard(
 }
 
 
-@Preview
+@Preview(
+    name = "Small phone",
+    widthDp = 260,
+    heightDp = 568,
+    showBackground = true
+)
 @Composable
 fun WeeklyForecastCardPreview(){
-    WeeklyForecastCard(forecast = weeklyForecasts.first())
+    WeeklyForecastCard(forecast = weeklyForecasts.get(4))
 }
