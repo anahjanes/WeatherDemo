@@ -33,7 +33,6 @@ import com.anahjanes.feature_weather.components.ErrorScreen
 import com.anahjanes.feature_weather.components.ProgressScreen
 import com.anahjanes.feature_weather.components.rememberLocationPermissionHandler
 import com.anahjanes.feature_weather.components.PermissionFallback
-import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 import com.anahjanes.feature_weather.week.ErrorWeek
 import com.anahjanes.feature_weather.week.WeekUiState
 import com.anahjanes.feature_weather.week.WeekViewModel
@@ -44,11 +43,11 @@ fun WeekScreen(
     viewModel: WeekViewModel = hiltViewModel(),
     onOpenCity:()-> Unit
 ) {
-    WeatherTheme {
+
         WeekScreenContent(
             viewModel = viewModel,onOpenCity
         )
-    }
+
 }
 
 
@@ -147,9 +146,9 @@ val weeklyForecasts = listOf(
 @Preview
 @Composable
 fun WeekContentPreview() {
-    WeatherTheme {
+
         WeekContent(weeklyForecasts, "Barcelona")
-    }
+
 }
 
 @Preview

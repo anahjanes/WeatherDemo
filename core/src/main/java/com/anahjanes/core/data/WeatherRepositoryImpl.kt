@@ -8,7 +8,6 @@ import com.anahjanes.core.data.remote.ErrorType
 import com.anahjanes.core.data.remote.dto.GeoCityDto
 import com.anahjanes.core.data.remote.dto.ForecastItem
 import com.anahjanes.core.data.remote.WeatherApi
-import com.anahjanes.core.data.remote.dto.City
 import com.anahjanes.core.data.remote.dto.dayKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -17,7 +16,7 @@ import java.io.IOException
 import javax.inject.Inject
 
 
-private inline fun <T> safeCall(block: () -> T): AppResult<T> =
+private suspend fun <T> safeCall(block: suspend () -> T): AppResult<T> =
     try {
         AppResult.Success(block())
     } catch (e: IOException) {
@@ -37,9 +36,6 @@ class WeatherRepositoryImpl @Inject constructor(
     override fun observeSelectedCity(): Flow<SelectedCity?> =
         cityPreferences.selectedCityFlow
 
-    override suspend fun setSelectedCity(city: SelectedCity) {
-        cityPreferences.saveCity(city)
-    }
 
     override suspend fun clearSelectedCity() {
         cityPreferences.clear()
@@ -67,9 +63,7 @@ class WeatherRepositoryImpl @Inject constructor(
 
     override suspend fun getTodayByCoords(lat: Double, lon: Double): AppResult<CurrentWeatherDto> =
         safeCall {
-            if (cityPreferences.selectedCityFlow.first() != null) {
 
-            }
             val city = cityPreferences.selectedCityFlow.first()?.name?: ""
 
             val today = api.getCurrentWeatherByCoords(lat = lat, lon = lon, city = city)

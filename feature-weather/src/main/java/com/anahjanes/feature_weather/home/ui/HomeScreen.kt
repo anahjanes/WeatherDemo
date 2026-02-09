@@ -12,7 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.anahjanes.core.data.local.SelectedCity
 import com.anahjanes.feature_weather.R
 import com.anahjanes.feature_weather.components.ErrorScreen
@@ -30,25 +30,24 @@ import com.anahjanes.feature_weather.home.HomeUiState
 import com.anahjanes.feature_weather.home.HomeViewModel
 import com.anahjanes.feature_weather.components.PermissionFallback
 import com.anahjanes.feature_weather.home.model.HomeUiModel
-import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onOpenCity: () -> Unit,
 ) {
-    val uiState = viewModel.uiState.collectAsState().value
-    val selectedCity by viewModel.selectedCity.collectAsState()
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+    val selectedCity by viewModel.selectedCity.collectAsStateWithLifecycle()
 
-    WeatherTheme {
-        HomeScreenContent(
-            uiState = uiState,
-            onOpenCity = onOpenCity,
-            loadWeather = { viewModel.loadWeather() },
-            selectedCity = selectedCity
-        )
-    }
+    HomeScreenContent(
+        uiState = uiState,
+        onOpenCity = onOpenCity,
+        loadWeather = { viewModel.loadWeather() },
+        selectedCity = selectedCity
+    )
+
 }
+
 @Composable
 fun HomeScreenContent(
     uiState: HomeUiState,
@@ -135,7 +134,6 @@ fun WeatherSuccessScreen(
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    WeatherTheme() {
         WeatherSuccessScreen(
             weather = HomeUiModel(
                 city = "Barcelona",
@@ -152,5 +150,4 @@ fun HomeScreenPreview() {
             )
 
         )
-    }
 }

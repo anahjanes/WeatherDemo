@@ -18,7 +18,6 @@ import com.anahjanes.feature_weather.R
 import com.anahjanes.feature_weather.navigation.City
 import com.anahjanes.feature_weather.navigation.Home
 import com.anahjanes.feature_weather.navigation.WeatherWeek
-import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 
 @Composable
 fun WeatherBottomBar(
@@ -27,7 +26,7 @@ fun WeatherBottomBar(
     onWeekClick: () -> Unit,
     onCityClick: () -> Unit,
 ) {
-    WeatherTheme {
+
         NavigationBar {
             NavigationBarItem(
                 selected = current is Home,
@@ -81,5 +80,5 @@ fun WeatherBottomBar(
                 )
             )
         }
-    }
+
 }

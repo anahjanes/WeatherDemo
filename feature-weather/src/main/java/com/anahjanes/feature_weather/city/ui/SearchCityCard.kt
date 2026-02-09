@@ -26,7 +26,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.anahjanes.feature_weather.R
-import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 
 @Composable
 fun SearchCityCard(
@@ -106,7 +105,6 @@ fun SearchCityCard(
 @Preview
 @Composable
 fun SearchCityCardPreview() {
-    WeatherTheme {
         SearchCityCard(
             searchQuery = "",
             onSearchQueryChange = {},
@@ -114,13 +112,12 @@ fun SearchCityCardPreview() {
             isSearchEnabled = true,
             isSearching = false
         )
-    }
+
 }
 
 @Preview
 @Composable
 fun SearchCityCardSearchingPreview() {
-    WeatherTheme {
         SearchCityCard(
             searchQuery = "Barcelona",
             onSearchQueryChange = {},
@@ -128,5 +125,4 @@ fun SearchCityCardSearchingPreview() {
             isSearchEnabled = true,
             isSearching = true
         )
-    }
 }

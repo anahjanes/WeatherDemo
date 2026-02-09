@@ -27,7 +27,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.anahjanes.feature_weather.R
-import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 
 @Composable
 fun ErrorScreen(
@@ -96,7 +95,5 @@ fun ErrorScreen(
 @Preview(showBackground = true)
 @Composable
 fun ErrorScreenPreview() {
-    WeatherTheme {
-        ErrorScreen(){}
-    }
+    ErrorScreen(){}
 }

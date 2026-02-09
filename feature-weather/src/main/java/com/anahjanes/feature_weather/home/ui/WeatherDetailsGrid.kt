@@ -10,7 +10,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.anahjanes.feature_weather.R
-import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 
 
 @Composable
@@ -66,7 +65,7 @@ fun WeatherDetailsGrid(
 )
 @Composable
 fun WeatherDetailsGridPreview() {
-    WeatherTheme {
+
         WeatherDetailsGrid(
             tempMax = "25°C",
             tempMin = "15°C",
@@ -74,5 +73,5 @@ fun WeatherDetailsGridPreview() {
             wind = "10 km/h",
             humidity = "50%"
         )
-    }
+
 }

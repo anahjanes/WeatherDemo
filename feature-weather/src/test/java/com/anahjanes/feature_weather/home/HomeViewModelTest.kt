@@ -127,7 +127,6 @@ class HomeViewModelTest {
         verify(locationDataSource, never()).getCurrentLocation()
     }
 
-    // ───────── helpers ─────────
 
     private fun sampleCurrentWeatherDto(city: String, lat: Double, lon: Double): CurrentWeatherDto =
         CurrentWeatherDto(

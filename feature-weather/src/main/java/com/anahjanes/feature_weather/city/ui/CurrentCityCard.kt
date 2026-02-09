@@ -21,7 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.anahjanes.feature_weather.R
-import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 import java.util.Locale
 
 @Composable
@@ -64,7 +63,5 @@ fun CurrentCityCard(city: String, modifier: Modifier = Modifier) {
 @Preview
 @Composable
 fun CurrentCityCardPreview() {
-    WeatherTheme {
-        CurrentCityCard(city = "Barcelona")
-    }
+    CurrentCityCard(city = "Barcelona")
 }

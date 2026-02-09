@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.anahjanes.feature_weather.navigation.WeatherRoot
-import com.anahjanes.weatherdemo.ui.theme.WeatherDemoTheme
+import com.anahjanes.weatherdemo.ui.theme.WeatherTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            WeatherDemoTheme {
+            WeatherTheme() {
                 WeatherRoot()
             }
         }

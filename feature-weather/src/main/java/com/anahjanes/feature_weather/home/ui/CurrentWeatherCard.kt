@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.sp
 import com.anahjanes.feature_weather.R
 import androidx.compose.ui.tooling.preview.Preview
 import coil.compose.AsyncImage
-import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 
 @Composable
 fun CurrentWeatherCard(
@@ -91,12 +90,12 @@ fun CurrentWeatherCard(
 @Preview
 @Composable
 fun CurrentWeatherCardPreview() {
-    WeatherTheme {
+
         CurrentWeatherCard(
             temperature = "12°",
             condition = "Clear",
             feelsLike = "10°",
             iconUrl = null
         )
-    }
+
 }

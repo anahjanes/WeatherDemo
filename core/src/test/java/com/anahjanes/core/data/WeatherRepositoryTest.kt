@@ -58,13 +58,6 @@ class WeatherRepositoryImplTest {
     }
 
     @Test
-    fun `setSelectedCity saves city`() = runTest {
-        repo.setSelectedCity(SelectedCity("Madrid", 40.41, -3.70))
-        assertEquals("Madrid", prefs.current()!!.name)
-        verifyNoInteractions(api)
-    }
-
-    @Test
     fun `clearSelectedCity clears saved city`() = runTest {
         prefs.saveCity(SelectedCity("X", 1.0, 2.0))
         repo.clearSelectedCity()

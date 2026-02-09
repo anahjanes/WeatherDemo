@@ -166,7 +166,7 @@ class CityViewModelTest {
         advanceUntilIdle()
 
         // Then
-        val expectedName = "Barcelona, Catalunya, ES"
+        val expectedName = "Barcelona, ES"
         verify(repository).saveCity(
             SelectedCity(
                 name = expectedName,

@@ -29,7 +29,6 @@ import com.anahjanes.feature_weather.city.CityUiState
 import com.anahjanes.feature_weather.city.CityViewModel
 import com.anahjanes.feature_weather.city.model.CityUiModel
 import com.anahjanes.feature_weather.components.rememberLocationPermissionHandler
-import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 
 @Composable
 fun CityScreen(
@@ -45,7 +44,7 @@ fun CityScreen(
         }
     }
 
-    WeatherTheme {
+
         CityScreenContent(
             uiState = uiState,
             onSearchQueryChange = viewModel::onSearchQueryChanged,
@@ -54,7 +53,7 @@ fun CityScreen(
             onUseCurrentLocation = viewModel::onUseCurrentLocation
         )
     }
-}
+
 
 @Composable
 fun CityScreenContent(
@@ -125,7 +124,7 @@ fun CityScreenContent(
 @Preview(showBackground = true)
 @Composable
 fun CityScreenPreview() {
-    WeatherTheme() {
+
         CityScreenContent(
             CityUiState(currentCity = "Barcelona"),
             onSearchQueryChange = { },
@@ -134,5 +133,5 @@ fun CityScreenPreview() {
             onUseCurrentLocation = { }
 
         )
-    }
+
 }
