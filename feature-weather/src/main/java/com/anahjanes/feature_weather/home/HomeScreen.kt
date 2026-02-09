@@ -44,6 +44,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.anahjanes.feature_weather.R
 import com.anahjanes.feature_weather.components.ErrorScreen
 import com.anahjanes.feature_weather.components.ProgressScreen
+import com.anahjanes.feature_weather.components.rememberLocationPermissionHandler
 import com.anahjanes.feature_weather.home.model.HomeUiModel
 import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 
@@ -59,86 +60,39 @@ fun HomeScreen(
         )
     }
 }
-
-
 @Composable
 fun HomeScreenContent(
     onOpenCity: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
     val uiState = viewModel.uiState.collectAsState().value
 
-    var hasLocationPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED ||
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
-        )
-    }
-
-
-    var permissionDenied by remember { mutableStateOf(false) }
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { resultMap ->
-        val granted = resultMap[Manifest.permission.ACCESS_COARSE_LOCATION] == true ||
-                resultMap[Manifest.permission.ACCESS_FINE_LOCATION] == true
-
-        hasLocationPermission = granted
-        permissionDenied = !granted
-
-        if (granted) {
-            viewModel.loadWeather()
-        }
+    val locationPermission = rememberLocationPermissionHandler {
+        viewModel.loadWeather()
     }
 
     LaunchedEffect(Unit) {
-        if (hasLocationPermission) {
-            viewModel.loadWeather()
-        } else {
-            permissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
-            )
-        }
+        locationPermission.requestPermission()
     }
 
     when (uiState) {
-        is HomeUiState.Success -> WeatherSuccessScreen(weather = uiState.weather)
-        is HomeUiState.Loading -> ProgressScreen()
-        is HomeUiState.Error -> ErrorScreen(uiState.message)
-        /*ErrorScreen(
-        message = uiState.message,
-        onRetry = {
-            if (hasLocationPermission) viewModel.loadWeather()
-            else permissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
-            )
-        },
-        onChooseCity = onOpenCity*/
-        else -> {
+        is HomeUiState.Success ->
+            WeatherSuccessScreen(weather = uiState.weather)
 
-            if (permissionDenied) {
-                PermissionFallback(onOpenCity = onOpenCity) {
-                    permissionLauncher.launch(
-                        arrayOf(
-                            Manifest.permission.ACCESS_COARSE_LOCATION,
-                            Manifest.permission.ACCESS_FINE_LOCATION
-                        )
-                    )
-                }
+        is HomeUiState.Loading ->
+            ProgressScreen()
+
+        is HomeUiState.Error ->
+            ErrorScreen(uiState.message)
+
+        else -> {
+            if (locationPermission.permissionDenied) {
+                PermissionFallback(
+                    onOpenCity = onOpenCity,
+                    onRequestPermissionAgain = {
+                        locationPermission.requestPermission()
+                    }
+                )
             } else {
                 ProgressScreen()
             }
@@ -206,7 +160,7 @@ fun CurrentWeatherCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 24.dp),
+                .padding(vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
@@ -224,7 +178,7 @@ fun CurrentWeatherCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = temperature,
@@ -244,7 +198,7 @@ fun CurrentWeatherCard(
             Text(
                 text = stringResource(R.string.feels_like) + " " + feelsLike,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)            )
+                color = MaterialTheme.colorScheme.onPrimary            )
             Spacer(modifier = Modifier.height(4.dp))
 
 
@@ -330,7 +284,8 @@ fun WeatherDetailItem(
             Column {
                 Text(
                     text = label,
-                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
                 Spacer(modifier = Modifier.height(2.dp))

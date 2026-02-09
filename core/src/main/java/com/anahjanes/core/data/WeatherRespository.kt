@@ -20,4 +20,6 @@ interface WeatherRepository {
     suspend fun getTodayByCoords(lat: Double, lon: Double): AppResult<CurrentWeatherDto>
 
     suspend fun searchCities(query: String, limit: Int = 5): AppResult<List<GeoCityDto>>
+
+    suspend fun saveCity(city: SelectedCity)
 }

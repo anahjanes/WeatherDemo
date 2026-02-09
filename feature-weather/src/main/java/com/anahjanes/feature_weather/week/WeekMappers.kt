@@ -1,6 +1,8 @@
 package com.anahjanes.feature_weather.week
 
 import com.anahjanes.core.data.remote.dto.ForecastItem
+import com.anahjanes.feature_weather.utils.toDayOfWeek
+import com.anahjanes.feature_weather.utils.toShortDate
 import com.anahjanes.feature_weather.week.model.WeekUiModel
 import com.anahjanes.feature_weather.utils.toWeatherIconUrl
 import java.text.SimpleDateFormat
@@ -20,7 +22,7 @@ fun Map<String, List<ForecastItem>>.toWeeklyForecast(): List<WeekUiModel> {
 
         WeekUiModel(
             day = dateKey.toDayOfWeek(),
-            date = dateKey,
+            date = dateKey.toShortDate(),
             iconUrl = representative.weather.firstOrNull()?.icon?.toWeatherIconUrl(),
             weather = representative.weather.firstOrNull()?.description.orEmpty(),
             maxTemp = maxTemp,
@@ -29,18 +31,3 @@ fun Map<String, List<ForecastItem>>.toWeeklyForecast(): List<WeekUiModel> {
     }
 }
 
-
-fun String.toDayOfWeek(): String {
-
-    val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    val date = inputFormat.parse(this) ?: return ""
-
-    val calendar = Calendar.getInstance()
-    calendar.time = date
-
-    return calendar.getDisplayName(
-        Calendar.DAY_OF_WEEK,
-        Calendar.SHORT,
-        Locale.getDefault()
-    ) ?: ""
-}

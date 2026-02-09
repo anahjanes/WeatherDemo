@@ -13,7 +13,8 @@ interface WeatherApi {
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
         @Query("units") units: String = WeatherApiConfig.UNITS,
-        @Query("lang") lang: String = WeatherApiConfig.LANG
+        @Query("lang") lang: String = WeatherApiConfig.LANG,
+        @Query("q") city: String =""
     ): CurrentWeatherDto
 
 

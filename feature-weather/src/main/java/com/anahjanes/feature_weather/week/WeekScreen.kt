@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.anahjanes.feature_weather.R
 import com.anahjanes.feature_weather.components.ProgressScreen
@@ -60,7 +61,8 @@ fun WeekScreenContent(viewModel: WeekViewModel = hiltViewModel()) {
 
     when (state) {
         WeekUiState.Idle,
-        WeekUiState.Loading -> ProgressScreen()
+        WeekUiState.Loading,
+            -> ProgressScreen()
 
         is WeekUiState.Error -> {
             val message = when (state.message) {
@@ -79,9 +81,15 @@ fun WeekScreenContent(viewModel: WeekViewModel = hiltViewModel()) {
 @Composable
 fun WeekContent(
     weeklyForecasts: List<WeekUiModel>,
-    city: String
+    city: String,
 ) {
-    Column(modifier = Modifier   .fillMaxSize() .background(MaterialTheme.colorScheme.background) .padding(16.dp),) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
         Text(
             text = stringResource(R.string.weekly_forecast),
@@ -98,8 +106,11 @@ fun WeekContent(
                 tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Text(text = city, style = MaterialTheme.typography.bodyMedium)
-        }
+            Text(
+                text = city,
+                fontWeight = FontWeight.Bold,
+                fontSize = 17.sp
+            )        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -107,83 +118,6 @@ fun WeekContent(
             items(weeklyForecasts) { forecast ->
                 WeeklyForecastCard(forecast)
             }
-        }
-    }
-}
-
-
-@Composable
-fun WeeklyForecastCard(
-    forecast: WeekUiModel,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            // 🟠 Icono con fondo
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .background(
-                        color =  Color(0xFFC9E8FF),
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                forecast.iconUrl?.let {
-                    coil.compose.AsyncImage(
-                        model = it,
-                        contentDescription = forecast.weather,
-                        modifier = Modifier.size(36.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // 📅 Día + descripción
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = forecast.day,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                if (forecast.date != null) {
-                    Text(
-                        text = forecast.date,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Text(
-                    text = forecast.weather,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            // 🌡 Temperaturas
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = "↑ ${forecast.maxTemp}°",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(
-                    text = "↓ ${forecast.minTemp}°",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
         }
     }
 }
@@ -203,7 +137,7 @@ val weeklyForecasts = listOf(
 @Composable
 fun WeekContentPreview() {
     WeatherTheme {
-    WeekContent(weeklyForecasts,"Barcelona")
+        WeekContent(weeklyForecasts, "Barcelona")
     }
 }
 

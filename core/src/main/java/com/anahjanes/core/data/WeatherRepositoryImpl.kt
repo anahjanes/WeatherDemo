@@ -8,6 +8,7 @@ import com.anahjanes.core.data.remote.ErrorType
 import com.anahjanes.core.data.remote.dto.GeoCityDto
 import com.anahjanes.core.data.remote.dto.ForecastItem
 import com.anahjanes.core.data.remote.WeatherApi
+import com.anahjanes.core.data.remote.dto.City
 import com.anahjanes.core.data.remote.dto.dayKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -49,7 +50,6 @@ class WeatherRepositoryImpl @Inject constructor(
             ?: throw IllegalStateException("No hay ciudad seleccionada")
 
 
-
     override suspend fun getWeek(): AppResult<Map<String, List<ForecastItem>>> =
         safeCall {
             val city = requireSelectedCity()
@@ -67,7 +67,13 @@ class WeatherRepositoryImpl @Inject constructor(
 
     override suspend fun getTodayByCoords(lat: Double, lon: Double): AppResult<CurrentWeatherDto> =
         safeCall {
-            val today = api.getCurrentWeatherByCoords(lat = lat, lon = lon)
+            if (cityPreferences.selectedCityFlow.first() != null) {
+
+            }
+            val city = cityPreferences.selectedCityFlow.first()?.name?: ""
+
+            val today = api.getCurrentWeatherByCoords(lat = lat, lon = lon, city = city)
+
 
             cityPreferences.saveCity(
                 SelectedCity(
@@ -79,6 +85,12 @@ class WeatherRepositoryImpl @Inject constructor(
 
             today
         }
+
+    override suspend fun saveCity(city: SelectedCity) {
+        cityPreferences.saveCity(
+            city
+        )
+    }
 
 
     override suspend fun searchCities(query: String, limit: Int): AppResult<List<GeoCityDto>> =

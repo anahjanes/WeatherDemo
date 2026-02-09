@@ -33,7 +33,10 @@ fun WeatherRoot() {
             entryProvider = entryProvider {
                 entry<Home> { HomeScreen() }
                 entry<WeatherWeek> { WeekScreen() }
-                entry<City> { CityScreen() }
+                entry<City> { CityScreen() {
+                    backStack.clear()
+                    backStack.add(Home)
+                } }
             }
         )
     }
