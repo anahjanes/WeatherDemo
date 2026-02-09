@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val weatherRepository: WeatherRepository,
@@ -23,14 +22,15 @@ class HomeViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Idle)
     val uiState = _uiState.asStateFlow()
+
     val selectedCity = weatherRepository.observeSelectedCity()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null) // 👈 clave
 
     fun loadWeather() {
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
 
-            val savedCity = weatherRepository.observeSelectedCity().first()
+            val savedCity = selectedCity.value
 
             val result = if (savedCity != null) {
                 weatherRepository.getTodayByCoords(savedCity.lat, savedCity.lon)
@@ -40,16 +40,12 @@ class HomeViewModel @Inject constructor(
                         _uiState.value = HomeUiState.Error
                         return@launch
                     }
-
                 weatherRepository.getTodayByCoords(location.lat, location.lon)
             }
 
-            when (result) {
-                is AppResult.Success ->
-                    _uiState.value = HomeUiState.Success(result.data.toHomeUiModel())
-
-                is AppResult.Error ->
-                    _uiState.value = HomeUiState.Error
+            _uiState.value = when (result) {
+                is AppResult.Success -> HomeUiState.Success(result.data.toHomeUiModel())
+                is AppResult.Error -> HomeUiState.Error
             }
         }
     }
