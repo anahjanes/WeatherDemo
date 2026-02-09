@@ -5,7 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.anahjanes.core.data.WeatherRepository
 import com.anahjanes.core.data.local.SelectedCity
 import com.anahjanes.core.data.remote.AppResult
-import com.anahjanes.core.data.remote.dto.GeoCityDto
+import com.anahjanes.feature_weather.city.model.CityUiModel
+import com.anahjanes.feature_weather.city.model.toUiItem
 import com.anahjanes.feature_weather.location.LocationDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,7 +62,8 @@ class CityViewModel @Inject constructor(
                     name = "",
                     lat = location.lat,
                     lon = location.lon
-                ))
+                )
+            )
             _uiState.update {
                 it.copy(
                     searchQuery = "",
@@ -72,7 +74,7 @@ class CityViewModel @Inject constructor(
     }
 
 
-    fun onCitySelected(city: GeoCityDto) {
+    fun onCitySelected(city: CityUiModel) {
         viewModelScope.launch {
             repository.saveCity(
                 SelectedCity(
@@ -91,13 +93,12 @@ class CityViewModel @Inject constructor(
     }
 
     fun onNavigationHandled() {
-        _uiState.update { it.copy(citySelected = false) }
+        _uiState.update { it.copy(citySelected = false, results = emptyList()) }
     }
 
-    private fun buildCityName(city: GeoCityDto): String {
+    private fun buildCityName(city: CityUiModel): String {
         return listOfNotNull(
             city.name,
-            city.state,
             city.country
         ).joinToString(", ")
     }
@@ -115,7 +116,7 @@ class CityViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isSearching = false,
-                            results = result.data
+                            results = result.data.map { it.toUiItem() }
                         )
                     }
                 }
@@ -136,7 +137,7 @@ class CityViewModel @Inject constructor(
 data class CityUiState(
     val searchQuery: String = "",
     val isSearching: Boolean = false,
-    val results: List<GeoCityDto> = emptyList(),
+    val results: List<CityUiModel> = emptyList(),
     val error: String? = null,
     val currentCity: String? = null,
     val citySelected: Boolean = false,

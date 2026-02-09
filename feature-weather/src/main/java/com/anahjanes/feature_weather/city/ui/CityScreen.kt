@@ -1,4 +1,4 @@
-package com.anahjanes.feature_weather.city
+package com.anahjanes.feature_weather.city.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,8 +24,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.anahjanes.core.data.remote.dto.GeoCityDto
 import com.anahjanes.feature_weather.R
+import com.anahjanes.feature_weather.city.CityUiState
+import com.anahjanes.feature_weather.city.CityViewModel
+import com.anahjanes.feature_weather.city.model.CityUiModel
 import com.anahjanes.feature_weather.components.rememberLocationPermissionHandler
 import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 
@@ -59,7 +61,7 @@ fun CityScreenContent(
     uiState: CityUiState,
     onSearchQueryChange: (String) -> Unit,
     onSearchClick: () -> Unit,
-    onCitySelected: (GeoCityDto) -> Unit,
+    onCitySelected: (CityUiModel) -> Unit,
     onUseCurrentLocation: () -> Unit,
 ) {
 
@@ -115,7 +117,7 @@ fun CityScreenContent(
 
         uiState.error?.let {
             Spacer(Modifier.height(8.dp))
-            Text(text = it, color = Color.Red)
+            Text(text = stringResource(R.string.no_connection_message), color = Color.Red)
         }
     }
 }

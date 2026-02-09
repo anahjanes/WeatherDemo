@@ -1,4 +1,4 @@
-package com.anahjanes.feature_weather.city
+package com.anahjanes.feature_weather.city.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

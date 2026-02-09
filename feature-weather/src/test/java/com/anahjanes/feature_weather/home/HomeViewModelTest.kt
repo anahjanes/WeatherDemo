@@ -16,10 +16,8 @@ import com.anahjanes.feature_weather.location.LocationDataSource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.*
@@ -155,28 +153,3 @@ class HomeViewModelTest {
             dt = 1234567890L
         )
 }
-    // ───────── helpers ─────────
-
-    private fun sampleCurrentWeatherDto(city: String, lat: Double, lon: Double): CurrentWeatherDto =
-        CurrentWeatherDto(
-            coord = CoordDto(lon = lon, lat = lat),
-            weather = listOf(
-                WeatherDescriptionDto(
-                    id = 800,
-                    main = "Clear",
-                    description = "clear sky",
-                    icon = "01d"
-                )
-            ),
-            main = MainWeatherDto(
-                temp = 20.0,
-                feels_like = 19.0,
-                temp_min = 18.0,
-                temp_max = 22.0,
-                humidity = 50
-            ),
-            wind = WindDto(speed = 3.5),
-            clouds = CloudsDto(all = 10),
-            name = city,
-            dt = 1234567890L
-        )

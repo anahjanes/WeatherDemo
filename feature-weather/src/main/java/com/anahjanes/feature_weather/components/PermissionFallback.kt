@@ -1,4 +1,4 @@
-package com.anahjanes.feature_weather.home
+package com.anahjanes.feature_weather.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,6 +54,6 @@ fun PermissionFallback(
 
 @Preview
 @Composable
-fun previewPermissionFallback() {
+fun PreviewPermissionFallback() {
     PermissionFallback({}, {})
 }

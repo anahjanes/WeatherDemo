@@ -1,4 +1,4 @@
-package com.anahjanes.feature_weather.home
+package com.anahjanes.feature_weather.home.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.anahjanes.feature_weather.R
 import androidx.compose.ui.tooling.preview.Preview
+import coil.compose.AsyncImage
 import com.anahjanes.feature_weather.ui.theme.WeatherTheme
 
 @Composable
@@ -51,7 +52,7 @@ fun CurrentWeatherCard(
                 contentAlignment = Alignment.Center
             ) {
                 if (iconUrl != null) {
-                    coil.compose.AsyncImage(
+                    AsyncImage(
                         model = iconUrl,
                         contentDescription = condition,
                         modifier = Modifier.size(84.dp)

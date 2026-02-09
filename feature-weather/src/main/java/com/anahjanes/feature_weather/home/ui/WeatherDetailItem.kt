@@ -1,4 +1,4 @@
-package com.anahjanes.feature_weather.home
+package com.anahjanes.feature_weather.home.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

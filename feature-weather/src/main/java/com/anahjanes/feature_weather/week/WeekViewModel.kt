@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.anahjanes.core.data.WeatherRepository
 import com.anahjanes.core.data.remote.AppResult
 import com.anahjanes.feature_weather.week.model.WeekUiModel
+import com.anahjanes.feature_weather.week.model.toWeeklyForecast
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

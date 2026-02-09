@@ -6,6 +6,8 @@ import com.anahjanes.core.data.remote.AppResult
 import com.anahjanes.core.data.remote.ErrorType
 import com.anahjanes.core.data.remote.dto.GeoCityDto
 import com.anahjanes.feature_weather.MainDispatcherRule
+import com.anahjanes.feature_weather.city.model.CityUiModel
+import com.anahjanes.feature_weather.city.model.toUiItem
 import com.anahjanes.feature_weather.location.LatLon
 import com.anahjanes.feature_weather.location.LocationDataSource
 import junit.framework.TestCase.assertEquals
@@ -117,11 +119,12 @@ class CityViewModelTest {
         // When
         viewModel.searchCity()
         advanceUntilIdle()
+        val expectedResults = results.map { it.toUiItem() }
 
         // Then
         val state = viewModel.uiState.value
         assertFalse(state.isSearching)
-        assertEquals(results, state.results)
+        assertEquals(expectedResults, state.results)
         assertEquals(null, state.error)
 
         verify(repository).searchCities("bar", limit = 10)
@@ -150,9 +153,8 @@ class CityViewModelTest {
     @Test
     fun `onCitySelected - saves selected city with built name and sets citySelected true, clears query`() = runTest {
         // Given
-        val city = GeoCityDto(
+        val city = CityUiModel(
             name = "Barcelona",
-            state = "Catalunya",
             country = "ES",
             lat = 41.38,
             lon = 2.17
@@ -222,7 +224,8 @@ class CityViewModelTest {
     @Test
     fun `onNavigationHandled - resets citySelected to false`() = runTest {
         // Given: forzamos citySelected=true seleccionando una ciudad
-        val city = GeoCityDto(name = "Madrid", state = null, country = "ES", lat = 40.41, lon = -3.70)
+        val city =
+            CityUiModel(name = "Madrid",  country = "ES", lat = 40.41, lon = -3.70)
         viewModel.onCitySelected(city)
         advanceUntilIdle()
         assertTrue(viewModel.uiState.value.citySelected)

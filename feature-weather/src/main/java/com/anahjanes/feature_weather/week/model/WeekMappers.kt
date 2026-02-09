@@ -1,13 +1,9 @@
-package com.anahjanes.feature_weather.week
+package com.anahjanes.feature_weather.week.model
 
 import com.anahjanes.core.data.remote.dto.ForecastItem
 import com.anahjanes.feature_weather.utils.toDayOfWeek
 import com.anahjanes.feature_weather.utils.toShortDate
-import com.anahjanes.feature_weather.week.model.WeekUiModel
 import com.anahjanes.feature_weather.utils.toWeatherIconUrl
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
 fun Map<String, List<ForecastItem>>.toWeeklyForecast(): List<WeekUiModel> {
     return entries.map { (dateKey, items) ->

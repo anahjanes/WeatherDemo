@@ -1,4 +1,4 @@
-package com.anahjanes.feature_weather.week
+package com.anahjanes.feature_weather.week.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.anahjanes.feature_weather.week.model.WeekUiModel
 
 @Composable
@@ -56,7 +57,7 @@ fun WeeklyForecastCard(
                 contentAlignment = Alignment.Center
             ) {
                 forecast.iconUrl?.let {
-                    coil.compose.AsyncImage(
+                    AsyncImage(
                         model = it,
                         contentDescription = forecast.weather,
                         modifier = Modifier.size(46.dp)

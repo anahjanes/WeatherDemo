@@ -7,10 +7,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import com.anahjanes.feature_weather.city.CityScreen
+import com.anahjanes.feature_weather.city.ui.CityScreen
 import com.anahjanes.feature_weather.components.WeatherBottomBar
-import com.anahjanes.feature_weather.home.HomeScreen
-import com.anahjanes.feature_weather.week.WeekScreen
+import com.anahjanes.feature_weather.home.ui.HomeScreen
+import com.anahjanes.feature_weather.week.ui.WeekScreen
 
 @Composable
 fun WeatherRoot() {

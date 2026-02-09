@@ -1,7 +1,6 @@
-package com.anahjanes.feature_weather.home
+package com.anahjanes.feature_weather.home.model
 
 import com.anahjanes.core.data.remote.dto.CurrentWeatherDto
-import com.anahjanes.feature_weather.home.model.HomeUiModel
 import com.anahjanes.feature_weather.utils.toWeatherIconUrl
 import java.text.SimpleDateFormat
 import java.util.Date
