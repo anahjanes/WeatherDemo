@@ -43,8 +43,6 @@ fun CityScreen(
             viewModel.onNavigationHandled()
         }
     }
-
-
         CityScreenContent(
             uiState = uiState,
             onSearchQueryChange = viewModel::onSearchQueryChanged,

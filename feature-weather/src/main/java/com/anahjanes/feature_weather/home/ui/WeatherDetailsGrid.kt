@@ -5,11 +5,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.anahjanes.feature_weather.R
+import com.anahjanes.feature_weather.ui.theme.CloudsColor
+import com.anahjanes.feature_weather.ui.theme.HumidityColor
+import com.anahjanes.feature_weather.ui.theme.TempColor
+import com.anahjanes.feature_weather.ui.theme.WindColor
 
 
 @Composable
@@ -28,14 +31,14 @@ fun WeatherDetailsGrid(
                 icon = R.drawable.ic_temp,
                 label = stringResource(id = R.string.weather_detail_temp_hl),
                 value = "$tempMax / $tempMin",
-                iconBackgroundColor = Color(0xFFFFDDC1)
+                iconBackgroundColor = TempColor
             )
             WeatherDetailItem(
                 modifier = Modifier.weight(1f),
                 icon = R.drawable.ic_cloud,
                 label = stringResource(id = R.string.weather_detail_clouds),
                 value = clouds,
-                iconBackgroundColor = Color(0xFFC9E8FF)
+                iconBackgroundColor = CloudsColor
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -44,14 +47,14 @@ fun WeatherDetailsGrid(
                 icon = R.drawable.ic_wind,
                 label = stringResource(id = R.string.weather_detail_wind),
                 value = wind,
-                iconBackgroundColor = Color(0xFFC8F7E8)
+                iconBackgroundColor = WindColor
             )
             WeatherDetailItem(
                 modifier = Modifier.weight(1f),
                 icon = R.drawable.ic_humidity,
                 label = stringResource(id = R.string.weather_detail_humidity),
                 value = humidity,
-                iconBackgroundColor = Color(0xFFE1DFFF)
+                iconBackgroundColor = HumidityColor
             )
         }
     }

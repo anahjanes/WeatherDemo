@@ -41,12 +41,12 @@ import com.anahjanes.feature_weather.week.model.WeekUiModel
 @Composable
 fun WeekScreen(
     viewModel: WeekViewModel = hiltViewModel(),
-    onOpenCity:()-> Unit
+    onOpenCity: () -> Unit,
 ) {
 
-        WeekScreenContent(
-            viewModel = viewModel,onOpenCity
-        )
+    WeekScreenContent(
+        viewModel = viewModel, onOpenCity
+    )
 
 }
 
@@ -146,9 +146,7 @@ val weeklyForecasts = listOf(
 @Preview
 @Composable
 fun WeekContentPreview() {
-
-        WeekContent(weeklyForecasts, "Barcelona")
-
+    WeekContent(weeklyForecasts, "Barcelona")
 }
 
 @Preview

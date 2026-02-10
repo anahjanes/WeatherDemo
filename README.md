@@ -2,7 +2,7 @@
 
 A sample Android weather application built using modern Android development tools and best practices.
 
-The app retrieves real-time weather data from the OpenWeatherMap API and presents it through a clean and simple UI built entirely with Jetpack Compose, using the new Navigation 3 API.
+The app consumes real-time data from the OpenWeatherMap API and presents it through a fully Jetpack Compose–based UI, following an MVVM architecture and leveraging Kotlin Coroutines, Flow, and Navigation 3 API.
 
 ---
 
@@ -31,7 +31,7 @@ The app retrieves real-time weather data from the OpenWeatherMap API and present
 To run the project, create a local.properties file in the root directory and add your OpenWeatherMap API key:
 
 ```properties
-api_key="YOUR_API_KEY"
+OPEN_WEATHER_API_KEY=YOUR_API_KEY
 ```
 
 You can obtain an API key from the OpenWeatherMap website:
@@ -44,7 +44,7 @@ https://openweathermap.org/api
 The application consists of three main screens:
 
 1. Home  
-   Displays the current weather and temperature using the device’s coordinates.
+   Displays the current weather and temperature using the device’s coordinates or the selected city.**
 
 2. Weekly Forecast  
    Shows the weather forecast for the upcoming days.
@@ -59,13 +59,13 @@ The application consists of three main screens:
 The project follows the MVVM (Model–View–ViewModel) architecture and is divided into the following modules:
 
 - :app  
-  Main application module, responsible for application setup and navigation.
+  Main application module, responsible for application setup.
 
 - :core  
   Contains API definitions, data sources, local persistence (city), and the repository.
 
 - :feature-weather  
-  Includes all UI screens and their corresponding ViewModels.
+  Includes all UI screens, navigation and their corresponding ViewModels.
 
 To keep the project simple and avoid over-engineering, a single repository is used directly by the ViewModels, without an additional UseCase layer.
 For the same reason, the project is not split into more modules.
@@ -85,7 +85,7 @@ For the same reason, the project is not split into more modules.
   The UI is built entirely with Jetpack Compose to leverage a modern, declarative UI approach and reduce boilerplate compared to XML-based layouts.
 
 - **Navigation 3**  
-  Navigation is implemented using the new Navigation 3 API for Jetpack Compose, allowing a more flexible and type-safe navigation approach compared to the previous Navigation Compose APIs.
+  Navigation is implemented using Navigation 3 API for Jetpack Compose, allowing a more flexible and type-safe navigation approach compared to the previous Navigation Compose APIs.
 
 - **Coroutines and Flow**  
   Coroutines and Flow are used to handle asynchronous operations and data streams in a concise and lifecycle-aware manner.

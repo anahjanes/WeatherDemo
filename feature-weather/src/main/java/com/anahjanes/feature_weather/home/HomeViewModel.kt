@@ -24,7 +24,7 @@ class HomeViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     val selectedCity = weatherRepository.observeSelectedCity()
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null) // 👈 clave
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     fun loadWeather() {
         viewModelScope.launch {

@@ -96,7 +96,7 @@ fun SearchCityCard(
                     strokeWidth = 2.dp
                 )
             } else {
-                Text("Search")
+                Text(stringResource(R.string.search))
             }
         }
     }

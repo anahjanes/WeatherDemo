@@ -59,7 +59,7 @@ fun WeatherDetailItem(
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(
-                modifier = Modifier.weight(1f) // 👈 clave: acota el ancho disponible para los textos
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = label,

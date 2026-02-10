@@ -19,13 +19,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.anahjanes.feature_weather.ui.theme.SkyColor
 import com.anahjanes.feature_weather.week.model.WeekUiModel
 
 @Composable
@@ -46,12 +46,11 @@ fun WeeklyForecastCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // 🟠 Icono con fondo (más grande)
             Box(
                 modifier = Modifier
                     .size(72.dp)
                     .background(
-                        color = Color(0xFFC9E8FF),
+                        color = SkyColor,
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -92,7 +91,6 @@ fun WeeklyForecastCard(
 
                 Text(
                     text = forecast.weather,
-                    style = MaterialTheme.typography.bodyLarge,
                     fontSize = 16.sp,
                     lineHeight = 20.sp,
                     fontWeight = FontWeight.Medium
@@ -105,7 +103,6 @@ fun WeeklyForecastCard(
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = "↑ ${forecast.maxTemp}°",
-                    style = MaterialTheme.typography.titleLarge,
                     fontSize = 18.sp,
                     lineHeight = 22.sp,
                     fontWeight = FontWeight.SemiBold
@@ -113,7 +110,6 @@ fun WeeklyForecastCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "↓ ${forecast.minTemp}°",
-                    style = MaterialTheme.typography.titleLarge,
                     fontSize = 18.sp,
                     lineHeight = 22.sp,
                     fontWeight = FontWeight.SemiBold,

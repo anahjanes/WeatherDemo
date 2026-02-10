@@ -8,7 +8,7 @@ import com.anahjanes.feature_weather.utils.toWeatherIconUrl
 fun Map<String, List<ForecastItem>>.toWeeklyForecast(): List<WeekUiModel> {
     return entries.map { (dateKey, items) ->
 
-        // Item representativo: el de las 12:00 si existe
+        // Representative item: the one at 12:00 if it exists
         val representative = items.firstOrNull {
             it.dt_txt.contains("12:00:00")
         } ?: items.first()
