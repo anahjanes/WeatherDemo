@@ -44,7 +44,7 @@ https://openweathermap.org/api
 The application consists of three main screens:
 
 1. Home  
-   Displays the current weather and temperature using the device’s coordinates or the selected city.**
+   Displays the current weather and temperature using the device’s coordinates or the selected city.
 
 2. Weekly Forecast  
    Shows the weather forecast for the upcoming days.
