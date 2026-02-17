@@ -14,7 +14,8 @@ import androidx.core.content.ContextCompat
 
 @Composable
 fun rememberLocationPermissionHandler(
-    onPermissionGranted: () -> Unit
+    onPermissionGranted: () -> Unit,
+    onPermissionDenied:()-> Unit
 ): LocationPermissionHandler {
 
     val context = LocalContext.current
@@ -33,6 +34,8 @@ fun rememberLocationPermissionHandler(
         if (granted) {
             onPermissionGranted()
         }
+        else
+            onPermissionDenied()
     }
 
     fun requestPermission() {

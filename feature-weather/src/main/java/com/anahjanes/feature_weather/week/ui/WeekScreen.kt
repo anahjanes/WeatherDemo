@@ -57,9 +57,9 @@ fun WeekScreenContent(viewModel: WeekViewModel = hiltViewModel(), onOpenCity: ()
         viewModel.loadWeek()
     }
     val state = viewModel.uiState.collectAsState().value
-    val locationPermission = rememberLocationPermissionHandler {
-        viewModel.loadWeek()
-    }
+    val locationPermission = rememberLocationPermissionHandler (
+        {viewModel.loadWeek()},{}
+        )
     when (state) {
         WeekUiState.Idle,
         WeekUiState.Loading,

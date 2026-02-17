@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -38,6 +39,9 @@ class CityPreferences @Inject constructor(@ApplicationContext private val contex
             prefs[Keys.LAT] = city.lat
             prefs[Keys.LON] = city.lon
         }
+    }
+    override suspend fun getSelectedCity(): SelectedCity? {
+        return selectedCityFlow.first()
     }
 
     override suspend fun clear() {

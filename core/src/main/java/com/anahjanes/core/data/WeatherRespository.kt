@@ -11,6 +11,9 @@ interface WeatherRepository {
 
     fun observeSelectedCity(): Flow<SelectedCity?>
 
+    suspend fun requireSelectedCity(): SelectedCity?
+
+
     suspend fun clearSelectedCity()
 
     suspend fun getWeek(): AppResult<Map<String, List<ForecastItem>>>

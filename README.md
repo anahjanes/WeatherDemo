@@ -58,14 +58,19 @@ The application consists of three main screens:
 
 The project follows the MVVM (Model–View–ViewModel) architecture and is divided into the following modules:
 
-- :app  
+- **:app**  
   Main application module, responsible for application setup.
+  
+  Owns the global navigation entry point and decides which feature is shown as the start destination. This  is the place where additional features (e.g. `feature-settings`, `feature-profile`) could be integrated in the future.
 
-- :core  
-  Contains API definitions, data sources, local persistence (city), and the repository.
+- **:core**  
+ Contains API definitions, data sources, local persistence (city), and the repository.
 
-- :feature-weather  
+- **:feature-weather**  
   Includes all UI screens, navigation and their corresponding ViewModels.
+  
+  Since the Weather feature is a self-contained module, all navigation between its internal screens (Home, City Search, Weekly Forecast) is implemented inside `:feature-weather`.  
+  This keeps the feature cohesive and independent, while still allowing the application to scale by keeping the global navigation orchestration in `:app`.
 
 To keep the project simple and avoid over-engineering, a single repository is used directly by the ViewModels, without an additional UseCase layer.
 For the same reason, the project is not split into more modules.

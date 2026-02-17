@@ -62,9 +62,9 @@ fun CityScreenContent(
     onUseCurrentLocation: () -> Unit,
 ) {
 
-    val locationPermission = rememberLocationPermissionHandler {
-        onUseCurrentLocation()
-    }
+    val locationPermission = rememberLocationPermissionHandler (
+        onPermissionGranted = { onUseCurrentLocation() },
+        onPermissionDenied = {  })
 
     Column(
         modifier = Modifier

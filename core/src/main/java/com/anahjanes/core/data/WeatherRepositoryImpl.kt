@@ -37,18 +37,19 @@ class WeatherRepositoryImpl @Inject constructor(
         cityPreferences.selectedCityFlow
 
 
+
     override suspend fun clearSelectedCity() {
         cityPreferences.clear()
     }
 
-    private suspend fun requireSelectedCity(): SelectedCity =
+    override  suspend fun requireSelectedCity(): SelectedCity? =
         cityPreferences.selectedCityFlow.first()
-            ?: throw IllegalStateException("No hay ciudad seleccionada")
+
 
 
     override suspend fun getWeek(): AppResult<Map<String, List<ForecastItem>>> =
         safeCall {
-            val city = requireSelectedCity()
+            val city = requireSelectedCity()!!
             val response = api.getSevenDayForecastByCoords(city.lat, city.lon)
 
             response.list

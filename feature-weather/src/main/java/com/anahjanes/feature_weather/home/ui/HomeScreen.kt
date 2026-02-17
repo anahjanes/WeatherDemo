@@ -1,5 +1,6 @@
 package com.anahjanes.feature_weather.home.ui
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -29,58 +30,64 @@ import com.anahjanes.feature_weather.components.rememberLocationPermissionHandle
 import com.anahjanes.feature_weather.home.HomeUiState
 import com.anahjanes.feature_weather.home.HomeViewModel
 import com.anahjanes.feature_weather.components.PermissionFallback
+import com.anahjanes.feature_weather.home.HomeEvent
 import com.anahjanes.feature_weather.home.model.HomeUiModel
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    onOpenCity: () -> Unit,
+    onOpenCity: () -> Unit
 ) {
-    val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
-    val selectedCity by viewModel.selectedCity.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // Manejo del permiso de ubicación
+    val locationPermission = rememberLocationPermissionHandler(
+        onPermissionGranted = { viewModel.onPermissionGranted() },
+        onPermissionDenied = { viewModel.onPermissionDenied() }
+    )
+
+    // Primera carga
+    LaunchedEffect(Unit) {
+        viewModel.loadWeather()
+    }
+
+    // Escuchamos eventos one-shot
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                HomeEvent.RequestLocationPermission -> {
+                    locationPermission.requestPermission()
+                }
+            }
+        }
+    }
+
+    // Contenido principal según estado
     HomeScreenContent(
         uiState = uiState,
         onOpenCity = onOpenCity,
-        loadWeather = { viewModel.loadWeather() },
-        selectedCity = selectedCity
+        onRetryPermission = { locationPermission.requestPermission() },
+        onRetryWeather = { viewModel.loadWeather() }
     )
-
 }
+
 
 @Composable
 fun HomeScreenContent(
     uiState: HomeUiState,
     onOpenCity: () -> Unit,
-    loadWeather: () -> Unit,
-    selectedCity: SelectedCity?,
+    onRetryPermission: () -> Unit,
+    onRetryWeather: () -> Unit
 ) {
-    val locationPermission = rememberLocationPermissionHandler {
-        loadWeather()
-    }
-
-    LaunchedEffect(selectedCity) {
-        if (selectedCity == null) {
-            locationPermission.requestPermission()
-        } else {
-            loadWeather()
-        }
-    }
-
     when (uiState) {
-        is HomeUiState.Success -> WeatherSuccessScreen(weather = uiState.weather)
+        is HomeUiState.Success -> WeatherSuccessScreen(uiState.weather)
         is HomeUiState.Loading -> ProgressScreen()
-        is HomeUiState.Error -> ErrorScreen { loadWeather() }
-        else -> {
-            if (selectedCity == null && locationPermission.permissionDenied) {
-                PermissionFallback(
-                    onOpenCity = onOpenCity,
-                    onRequestPermissionAgain = { locationPermission.requestPermission() }
-                )
-            } else {
-                ProgressScreen()
-            }
-        }
+        is HomeUiState.Error -> ErrorScreen(onRetryWeather)
+        is HomeUiState.NeedsLocationPermission -> PermissionFallback(
+            onOpenCity = onOpenCity,
+            onRequestPermissionAgain = onRetryPermission
+        )
+        HomeUiState.Idle -> ProgressScreen()
     }
 }
 
@@ -134,20 +141,20 @@ fun WeatherSuccessScreen(
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-        WeatherSuccessScreen(
-            weather = HomeUiModel(
-                city = "Barcelona",
-                dateText = stringResource(id = R.string.today),
-                temperature = "25°C",
-                condition = "Sunny",
-                feelsLike = "10",
-                iconUrl = null,
-                tempMax = "28°C",
-                tempMin = "22°C",
-                clouds = "75%",
-                wind = "5 km/h",
-                humidity = "60%"
-            )
-
+    WeatherSuccessScreen(
+        weather = HomeUiModel(
+            city = "Barcelona",
+            dateText = stringResource(id = R.string.today),
+            temperature = "25°C",
+            condition = "Sunny",
+            feelsLike = "10",
+            iconUrl = null,
+            tempMax = "28°C",
+            tempMin = "22°C",
+            clouds = "75%",
+            wind = "5 km/h",
+            humidity = "60%"
         )
+
+    )
 }
