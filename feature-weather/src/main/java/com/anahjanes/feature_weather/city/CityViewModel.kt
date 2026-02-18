@@ -2,9 +2,13 @@ package com.anahjanes.feature_weather.city
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.anahjanes.core.data.WeatherRepository
-import com.anahjanes.core.data.local.SelectedCity
-import com.anahjanes.core.data.remote.AppResult
+import com.anahjanes.core_domain.repository.WeatherRepository
+import com.anahjanes.core_domain.model.SelectedCity
+import com.anahjanes.core_domain.model.AppResult
+import com.anahjanes.core_domain.usecases.GetSelectedCityUseCase
+import com.anahjanes.core_domain.usecases.ObserveSelectedCityUseCase
+import com.anahjanes.core_domain.usecases.SaveCityUseCase
+import com.anahjanes.core_domain.usecases.SearchCitiesUseCase
 import com.anahjanes.feature_weather.city.model.CityUiModel
 import com.anahjanes.feature_weather.city.model.toUiItem
 import com.anahjanes.feature_weather.location.LocationDataSource
@@ -18,10 +22,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CityViewModel @Inject constructor(
-    private val repository: WeatherRepository,
+    private val searchCitiesUseCase: SearchCitiesUseCase,
+    private val observeSelectedCityUseCase: ObserveSelectedCityUseCase,
+    private val saveCityUseCase: SaveCityUseCase,
     private val locationDataSource: LocationDataSource,
-
-    ) : ViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CityUiState())
     val uiState: StateFlow<CityUiState> = _uiState.asStateFlow()
@@ -32,11 +37,10 @@ class CityViewModel @Inject constructor(
 
     private fun observeCurrentCity() {
         viewModelScope.launch {
-            repository.observeSelectedCity().collect { city ->
-                _uiState.update {
-                    it.copy(currentCity = city?.name)
+            observeSelectedCityUseCase()
+                .collect { city ->
+                    _uiState.update { it.copy(currentCity = city?.name?.takeIf { n -> n.isNotBlank() }) }
                 }
-            }
         }
     }
 
@@ -53,11 +57,10 @@ class CityViewModel @Inject constructor(
         viewModelScope.launch {
             val location = locationDataSource.getCurrentLocation()
                 .getOrElse {
-
                     return@launch
                 }
             //We save city with no name and when it retrieves weather it will be filled
-            repository.saveCity(
+            saveCityUseCase(
                 SelectedCity(
                     name = "",
                     lat = location.lat,
@@ -76,13 +79,11 @@ class CityViewModel @Inject constructor(
 
     fun onCitySelected(city: CityUiModel) {
         viewModelScope.launch {
-            repository.saveCity(
-                SelectedCity(
-                    name = buildCityName(city),
-                    lat = city.lat,
-                    lon = city.lon
-                )
-            )
+
+            val selectedCity = SelectedCity(name = buildCityName(city), lat = city.lat, lon = city.lon)
+
+            saveCityUseCase(selectedCity)
+
             _uiState.update {
                 it.copy(
                     searchQuery = "",
@@ -111,12 +112,13 @@ class CityViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSearching = true, error = null) }
 
-            when (val result = repository.searchCities(query, limit = 10)) {
+
+            when (val result = searchCitiesUseCase(query)) {
                 is AppResult.Success -> {
                     _uiState.update {
                         it.copy(
                             isSearching = false,
-                            results = result.data.map { it.toUiItem() }
+                            results = result.data.map { city -> city.toUiItem() }
                         )
                     }
                 }
@@ -132,6 +134,7 @@ class CityViewModel @Inject constructor(
             }
         }
     }
+
 }
 
 data class CityUiState(

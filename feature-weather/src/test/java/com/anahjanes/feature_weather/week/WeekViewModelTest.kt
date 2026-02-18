@@ -1,168 +1,124 @@
 package com.anahjanes.feature_weather.week
 
-import com.anahjanes.core.data.WeatherRepository
-import com.anahjanes.core.data.local.SelectedCity
-import com.anahjanes.core.data.remote.AppResult
-import com.anahjanes.core.data.remote.ErrorType
-import com.anahjanes.core.data.remote.dto.City
-import com.anahjanes.core.data.remote.dto.Clouds
-import com.anahjanes.core.data.remote.dto.CloudsDto
-import com.anahjanes.core.data.remote.dto.Coord
-import com.anahjanes.core.data.remote.dto.ForecastItem
-import com.anahjanes.core.data.remote.dto.Main
-import com.anahjanes.core.data.remote.dto.MainWeatherDto
-import com.anahjanes.core.data.remote.dto.Rain
-import com.anahjanes.core.data.remote.dto.Sys
-import com.anahjanes.core.data.remote.dto.Weather
-import com.anahjanes.core.data.remote.dto.WeatherDescriptionDto
-import com.anahjanes.core.data.remote.dto.Wind
-import com.anahjanes.core.data.remote.dto.WindDto
+import com.anahjanes.core_domain.model.AppResult
+import com.anahjanes.core_domain.usecases.GetSelectedCityUseCase
+import com.anahjanes.core_domain.usecases.GetWeekWeatherUseCase
 import com.anahjanes.feature_weather.MainDispatcherRule
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
+import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
+import com.anahjanes.core_domain.model.SelectedCity
+import com.anahjanes.core_domain.model.ErrorType
+import com.anahjanes.core_domain.model.WeeklyForecastDay
+import com.anahjanes.feature_weather.week.model.WeekUiModel
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class WeekViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val repository: WeatherRepository = mock()
+    private val getWeekWeather: GetWeekWeatherUseCase = mock()
+    private val getSelectedCityUseCase: GetSelectedCityUseCase = mock()
 
-    private lateinit var viewModel: WeekViewModel
-
-    @Before
-    fun setUp() {
-        viewModel = WeekViewModel(repository)
-    }
+    private fun createVm() = WeekViewModel(
+        getWeekWeather = getWeekWeather,
+        getSelectedCityUseCase = getSelectedCityUseCase
+    )
 
     @Test
-    fun `loadWeek - when no city selected, emits Error NO_CITY_SELECTED`() = runTest {
+    fun `loadWeek - when no city selected - sets Error NO_CITY_SELECTED and does not call getWeekWeather`() = runTest {
         // Given
-        whenever(repository.observeSelectedCity()).thenReturn(flowOf(null))
+        whenever(getSelectedCityUseCase()).thenReturn(null)
+        val vm = createVm()
 
         // When
-        viewModel.loadWeek()
+        vm.loadWeek()
         advanceUntilIdle()
 
         // Then
-        val state = viewModel.uiState.value
+        val state = vm.uiState.value
         assertTrue(state is WeekUiState.Error)
-        assertEquals(
-            ErrorWeek.NO_CITY_SELECTED,
-            (state as WeekUiState.Error).message
+        state as WeekUiState.Error
+        assertEquals(ErrorWeek.NO_CITY_SELECTED, state.message)
+
+        verifyNoInteractions(getWeekWeather)
+    }
+
+    @Test
+    fun `loadWeek - when city selected and week weather success - sets Success with city and mapped items`() = runTest {
+        // Given
+        val city = SelectedCity(name = "Barcelona", lat = 1.0, lon = 2.0)
+        whenever(getSelectedCityUseCase()).thenReturn(city)
+
+        val domainWeek = listOf(
+            WeeklyForecastDay(
+                dateKey = "2026-02-18",
+                minTempC = 10.2,
+                maxTempC = 20.9,
+                conditionDescription = "clear sky",
+                iconCode = "01d"
+            ),
+            WeeklyForecastDay(
+                dateKey = "2026-02-19",
+                minTempC = 9.0,
+                maxTempC = 18.4,
+                conditionDescription = "few clouds",
+                iconCode = "02d"
+            )
         )
 
-        verify(repository).observeSelectedCity()
-        verify(repository, never()).getWeek()
-    }
+        whenever(getWeekWeather(1.0, 2.0)).thenReturn(AppResult.Success(domainWeek))
 
-    @Test
-    fun `loadWeek - when repository returns Error, emits Error LOAD_WEEK_ERROR`() = runTest {
-        // Given
-        whenever(repository.observeSelectedCity())
-            .thenReturn(flowOf(sampleCity()))
-
-        whenever(repository.getWeek())
-            .thenReturn(AppResult.Error(type = ErrorType.Unknown))
+        val vm = createVm()
 
         // When
-        viewModel.loadWeek()
+        vm.loadWeek()
         advanceUntilIdle()
 
         // Then
-        val state = viewModel.uiState.value
-        assertTrue(state is WeekUiState.Error)
-        assertEquals(
-            ErrorWeek.LOAD_WEEK_ERROR,
-            (state as WeekUiState.Error).message
-        )
-
-        verify(repository).observeSelectedCity()
-        verify(repository).getWeek()
-    }
-
-    @Test
-    fun `loadWeek - when city exists and getWeek succeeds, emits Success`() = runTest {
-        // Given
-        whenever(repository.observeSelectedCity())
-            .thenReturn(flowOf(sampleCity()))
-
-        whenever(repository.getWeek())
-            .thenReturn(AppResult.Success(fakeWeekMap()))
-
-        // When
-        viewModel.loadWeek()
-        advanceUntilIdle()
-
-        // Then
-        val state = viewModel.uiState.value
+        val state = vm.uiState.value
         assertTrue(state is WeekUiState.Success)
+        state as WeekUiState.Success
 
-        val success = state as WeekUiState.Success
-        assertEquals("Barcelona", success.city)
-        assertTrue(success.items.isNotEmpty())
+        assertEquals("Barcelona", state.city)
+        assertEquals(2, state.items.size)
 
-        verify(repository).observeSelectedCity()
-        verify(repository).getWeek()
+
+        val first: WeekUiModel = state.items.first()
+        assertEquals("clear sky", first.weather)
+        assertEquals(20, first.maxTemp) // 20.9 -> 20
+        assertEquals(10, first.minTemp) // 10.2 -> 10
+        assertNotNull(first.day)
+        assertNotNull(first.date)
+        assertNotNull(first.iconUrl)
+
+        verify(getWeekWeather).invoke(1.0, 2.0)
     }
 
-    // ───────── helpers ─────────
+    @Test
+    fun `loadWeek - when city selected and week weather error - sets Error LOAD_WEEK_ERROR`() = runTest {
+        // Given
+        val city = SelectedCity(name = "Barcelona", lat = 1.0, lon = 2.0)
+        whenever(getSelectedCityUseCase()).thenReturn(city)
 
-    private fun sampleCity(): SelectedCity =
-        SelectedCity(
-           lat = 41.38, lon = 2.17,
-            name = "Barcelona",
-        )
+        whenever(getWeekWeather(1.0, 2.0)).thenReturn(AppResult.Error(ErrorType.Network))
 
-    private fun fakeWeekMap(): Map<String, List<ForecastItem>> {
-        val item = ForecastItem(
-            dt = 123456,
-            dt_txt = "2026-02-05 12:00:00",
-            main = Main(
-                temp = 20.0,
-                feels_like = 19.0,
-                temp_min = 18.0,
-                temp_max = 22.0,
-                humidity = 50,
-                pressure = 1013,
-                sea_level = 1013,
-                grnd_level = 1000,
-                temp_kf = 0.0
-            ),
-            weather = listOf(
-                Weather(
-                    id = 800,
-                    main = "Clear",
-                    description = "clear sky",
-                    icon = "01d"
-                )
-            ),
-            wind = Wind(
-                speed = 3.5,
-                deg = 180,
-                gust = 5.0
-            ),
-            clouds = Clouds(all = 10),
-            pop = 0.0,
-            rain = Rain(`3h` = 0.0),
-            sys = Sys(pod = "d"),
-            visibility = 10_000
-        )
+        val vm = createVm()
 
-        return mapOf(
-            "2026-02-05" to listOf(item)
-        )
+        // When
+        vm.loadWeek()
+        advanceUntilIdle()
+
+        // Then
+        val state = vm.uiState.value
+        assertTrue(state is WeekUiState.Error)
+        state as WeekUiState.Error
+        assertEquals(ErrorWeek.LOAD_WEEK_ERROR, state.message)
+
+        verify(getWeekWeather).invoke(1.0, 2.0)
     }
 }

@@ -2,6 +2,7 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="11">
+      <module name="Weather_Demo.core-model" target="21" />
       <module name="Weather_Demo.prueba" target="21" />
     </bytecodeTargetLevel>
   </component>

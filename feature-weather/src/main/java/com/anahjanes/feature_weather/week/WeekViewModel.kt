@@ -2,10 +2,12 @@ package com.anahjanes.feature_weather.week
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.anahjanes.core.data.WeatherRepository
-import com.anahjanes.core.data.remote.AppResult
+import com.anahjanes.core_domain.repository.WeatherRepository
+import com.anahjanes.core_domain.model.AppResult
+import com.anahjanes.core_domain.usecases.GetSelectedCityUseCase
+import com.anahjanes.core_domain.usecases.GetWeekWeatherUseCase
 import com.anahjanes.feature_weather.week.model.WeekUiModel
-import com.anahjanes.feature_weather.week.model.toWeeklyForecast
+import com.anahjanes.feature_weather.week.model.toWeekUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WeekViewModel @Inject constructor(
-    private val repository: WeatherRepository,
+    private val getWeekWeather: GetWeekWeatherUseCase,
+    private val getSelectedCityUseCase: GetSelectedCityUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<WeekUiState>(WeekUiState.Idle)
@@ -26,7 +29,7 @@ class WeekViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = WeekUiState.Loading
 
-            val city = repository.observeSelectedCity().first()
+            val city = getSelectedCityUseCase()
 
             if (city == null) {
                 _uiState.value = WeekUiState.Error(ErrorWeek.NO_CITY_SELECTED)
@@ -34,9 +37,9 @@ class WeekViewModel @Inject constructor(
                 return@launch
             }
 
-            when (val result = repository.getWeek()) {
+            when (val result = getWeekWeather(city.lat, city.lon)) {
                 is AppResult.Success -> {
-                    val weeklyList = result.data.toWeeklyForecast()
+                    val weeklyList = result.data.toWeekUi()
                     _uiState.value = WeekUiState.Success(
                         city = city.name,
                         items = weeklyList

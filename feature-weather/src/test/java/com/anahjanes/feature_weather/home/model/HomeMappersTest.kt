@@ -1,47 +1,107 @@
+
 package com.anahjanes.feature_weather.home.model
 
-import com.anahjanes.core.data.remote.dto.CloudsDto
-import com.anahjanes.core.data.remote.dto.CoordDto
-import com.anahjanes.core.data.remote.dto.CurrentWeatherDto
-import com.anahjanes.core.data.remote.dto.MainWeatherDto
-import com.anahjanes.core.data.remote.dto.WeatherDescriptionDto
-import com.anahjanes.core.data.remote.dto.WindDto
+
+import com.anahjanes.core_domain.model.CurrentWeather
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class HomeMappersTest {
-
     @Test
-    fun `toHomeUiModel should map CurrentWeatherDto to HomeUiModel correctly`() {
+    fun `toHomeUiModel maps all fields correctly`() {
         // Given
-        val currentWeatherDto = CurrentWeatherDto(
-            name = "London",
-            dt = 1678886400, // March 15, 2023 12:00:00 PM UTC
-            weather = listOf(WeatherDescriptionDto(id = 800, main = "Clear", description = "clear sky", icon = "01d")),
-            main = MainWeatherDto(temp = 10.0, feels_like = 8.0, temp_max = 12.0, temp_min = 6.0, humidity = 50),
-            clouds = CloudsDto(all = 10),
-            wind = WindDto(speed = 5.0),
-            coord = CoordDto(lat = 51.5074, lon = -0.1278)
+        val timestamp = 1_700_000_000L // fijo para test estable
+
+        val current = CurrentWeather(
+            cityName = "Barcelona",
+            timestampSeconds = timestamp,
+            temperatureC = 20.4,
+            feelsLikeC = 19.6,
+            tempMinC = 18.2,
+            tempMaxC = 22.9,
+            conditionDescription = "clear sky",
+            iconCode = "01d",
+            humidityPct = 60,
+            windSpeedMs = 5.0,   // 5 * 3.6 = 18 km/h
+            cloudsPct = 25
         )
 
         // When
-        val homeUiModel = currentWeatherDto.toHomeUiModel()
+        val ui = current.toHomeUiModel()
 
         // Then
-        val expectedDate = SimpleDateFormat("EEEE, d MMM", Locale.ENGLISH).format(Date(1678886400L * 1000))
-        assertEquals("London", homeUiModel.city)
-        assertEquals(expectedDate, homeUiModel.dateText)
-        assertEquals("10°", homeUiModel.temperature)
-        assertEquals("Clear sky", homeUiModel.condition)
-        assertEquals("8°C", homeUiModel.feelsLike)
-        assertEquals("https://openweathermap.org/img/wn/01d@4x.png", homeUiModel.iconUrl)
-        assertEquals("12°", homeUiModel.tempMax)
-        assertEquals("6°", homeUiModel.tempMin)
-        assertEquals("10%", homeUiModel.clouds)
-        assertEquals("18 km/h", homeUiModel.wind)
-        assertEquals("50%", homeUiModel.humidity)
+        assertEquals("Barcelona", ui.city)
+
+        // Date
+        val expectedDate = SimpleDateFormat("EEEE, d MMM", Locale.ENGLISH)
+            .format(Date(timestamp * 1000))
+        assertEquals(expectedDate, ui.dateText)
+
+        // Temperature rounding
+        assertEquals("20°", ui.temperature)      // 20.4 -> 20
+        assertEquals("20°C", ui.feelsLike)       // 19.6 -> 20
+        assertEquals("23°", ui.tempMax)          // 22.9 -> 23
+        assertEquals("18°", ui.tempMin)          // 18.2 -> 18
+
+        // Condition capitalized
+        assertEquals("Clear sky", ui.condition)
+
+        // Wind conversion (m/s -> km/h)
+        assertEquals("18 km/h", ui.wind)
+
+        // Humidity and clouds
+        assertEquals("60%", ui.humidity)
+        assertEquals("25%", ui.clouds)
+
+        // Icon URL (no comprobamos URL exacta porque depende del extension)
+        assertNotNull(ui.iconUrl)
+    }
+
+    @Test
+    fun `toHomeUiModel sets condition dash when description is null`() {
+        val current = CurrentWeather(
+            cityName = "Barcelona",
+            timestampSeconds = 1_700_000_000L,
+            temperatureC = 20.0,
+            feelsLikeC = 20.0,
+            tempMinC = 18.0,
+            tempMaxC = 22.0,
+            conditionDescription = null,
+            iconCode = null,
+            humidityPct = 50,
+            windSpeedMs = 0.0,
+            cloudsPct = 0
+        )
+
+        val ui = current.toHomeUiModel()
+
+        assertEquals("-", ui.condition)
+        assertNull(ui.iconUrl)
+    }
+
+    @Test
+    fun `toHomeUiModel rounds wind correctly`() {
+        val current = CurrentWeather(
+            cityName = "Test",
+            timestampSeconds = 1_700_000_000L,
+            temperatureC = 0.0,
+            feelsLikeC = 0.0,
+            tempMinC = 0.0,
+            tempMaxC = 0.0,
+            conditionDescription = "rain",
+            iconCode = null,
+            humidityPct = 0,
+            windSpeedMs = 2.78, // 2.78 * 3.6 = 10.008 -> 10
+            cloudsPct = 0
+        )
+
+        val ui = current.toHomeUiModel()
+
+        assertEquals("10 km/h", ui.wind)
     }
 }

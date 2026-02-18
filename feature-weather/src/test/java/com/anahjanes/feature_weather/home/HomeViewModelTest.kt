@@ -1,26 +1,24 @@
-package com.anahjanes.feature_weather.home
 
-import com.anahjanes.core.data.WeatherRepository
-import com.anahjanes.core.data.local.SelectedCity
-import com.anahjanes.core.data.remote.AppResult
-import com.anahjanes.core.data.remote.dto.CloudsDto
-import com.anahjanes.core.data.remote.dto.CoordDto
-import com.anahjanes.core.data.remote.dto.CurrentWeatherDto
-import com.anahjanes.core.data.remote.ErrorType
-import com.anahjanes.core.data.remote.dto.MainWeatherDto
-import com.anahjanes.core.data.remote.dto.WeatherDescriptionDto
-import com.anahjanes.core.data.remote.dto.WindDto
+import app.cash.turbine.test
+import com.anahjanes.core_domain.model.AppResult
+import com.anahjanes.core_domain.model.CurrentWeather
+import com.anahjanes.core_domain.model.SelectedCity
+import com.anahjanes.core_domain.usecases.GetSelectedCityUseCase
+import com.anahjanes.core_domain.usecases.GetTodayWeatherUseCase
 import com.anahjanes.feature_weather.MainDispatcherRule
+import com.anahjanes.feature_weather.home.HomeEvent
+import com.anahjanes.feature_weather.home.HomeUiState
+import com.anahjanes.feature_weather.home.HomeViewModel
 import com.anahjanes.feature_weather.location.LatLon
 import com.anahjanes.feature_weather.location.LocationDataSource
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.*
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.*
+
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
@@ -28,127 +26,126 @@ class HomeViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val weatherRepository: WeatherRepository = mock()
+    private val getSelectedCity: GetSelectedCityUseCase = mock()
+    private val getTodayWeather: GetTodayWeatherUseCase = mock()
     private val locationDataSource: LocationDataSource = mock()
 
-    private lateinit var viewModel: HomeViewModel
-
-    private fun createViewModel(): HomeViewModel =
-        HomeViewModel(weatherRepository, locationDataSource)
+    private fun createVm() = HomeViewModel(
+        getSelectedCity = getSelectedCity,
+        getTodayWeather = getTodayWeather,
+        locationDataSource = locationDataSource,
+    )
 
     @Test
-    fun `loadWeather - when city is saved, uses coords and emits Success`() = runTest {
-        // Given
-        whenever(weatherRepository.observeSelectedCity())
-            .thenReturn(flowOf(SelectedCity("Saved", 10.0, 20.0)))
+    fun `loadWeather - saved city exists - uses its coords and sets Success`() = runTest {
+        whenever(getSelectedCity()).thenReturn(SelectedCity(name = "BCN", lat = 1.0, lon = 2.0))
+        whenever(getTodayWeather(1.0, 2.0)).thenReturn(AppResult.Success(dummyCurrentWeather()))
 
-        val dto = sampleCurrentWeatherDto("Saved", 10.0, 20.0)
-        whenever(weatherRepository.getTodayByCoords(10.0, 20.0))
-            .thenReturn(AppResult.Success(dto))
+        val vm = createVm()
 
-        // When
-        viewModel = createViewModel()
-        advanceUntilIdle() // deja que stateIn(Eagerly) coja el valor
-
-        viewModel.loadWeather()
+        vm.loadWeather()
         advanceUntilIdle()
 
-        // Then
-        assertTrue(viewModel.uiState.value is HomeUiState.Success)
-        verify(weatherRepository).getTodayByCoords(10.0, 20.0)
+        assertTrue(vm.uiState.value is HomeUiState.Success)
+        verify(getTodayWeather).invoke(1.0, 2.0)
+        verify(locationDataSource, never()).hasLocationPermission()
         verify(locationDataSource, never()).getCurrentLocation()
     }
 
     @Test
-    fun `loadWeather - when no city saved, gets location then calls weather by coords`() = runTest {
-        // Given
-        whenever(weatherRepository.observeSelectedCity()).thenReturn(flowOf(null))
+    fun `loadWeather - no saved city and no permission - emits RequestLocationPermission`() = runTest {
+        whenever(getSelectedCity()).thenReturn(null)
+        whenever(locationDataSource.hasLocationPermission()).thenReturn(false)
 
-        whenever(locationDataSource.getCurrentLocation())
-            .thenReturn(Result.success(LatLon(lat = 41.38, lon = 2.17)))
+        val vm = createVm()
 
-        val dto = sampleCurrentWeatherDto("Barcelona", 41.38, 2.17)
-        whenever(weatherRepository.getTodayByCoords(41.38, 2.17))
-            .thenReturn(AppResult.Success(dto))
+        vm.events.test {
+            vm.loadWeather()
+            advanceUntilIdle()
 
-        // When
-        viewModel = createViewModel()
-        advanceUntilIdle()
+            assertEquals(HomeEvent.RequestLocationPermission, awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
 
-        viewModel.loadWeather()
-        advanceUntilIdle()
+        verify(locationDataSource).hasLocationPermission()
+        verifyNoInteractions(getTodayWeather)
 
-        // Then
-        assertTrue(viewModel.uiState.value is HomeUiState.Success)
-        verify(locationDataSource).getCurrentLocation()
-        verify(weatherRepository).getTodayByCoords(41.38, 2.17)
+        assertEquals(HomeUiState.Loading, vm.uiState.value)
     }
 
     @Test
-    fun `loadWeather - when no city saved and location fails, emits Error and does not call repository`() = runTest {
-        // Given
-        whenever(weatherRepository.observeSelectedCity()).thenReturn(flowOf(null))
-
+    fun `loadWeather - no saved city, has permission, location fails - sets Error`() = runTest {
+        whenever(getSelectedCity()).thenReturn(null)
+        whenever(locationDataSource.hasLocationPermission()).thenReturn(true)
         whenever(locationDataSource.getCurrentLocation())
-            .thenReturn(Result.failure(IllegalStateException("no gps")))
+            .thenReturn(Result.failure(IllegalStateException("no loc")))
 
-        // When
-        viewModel = createViewModel()
+        val vm = createVm()
+
+        vm.loadWeather()
         advanceUntilIdle()
 
-        viewModel.loadWeather()
-        advanceUntilIdle()
-
-        // Then
-        assertTrue(viewModel.uiState.value is HomeUiState.Error)
+        assertEquals(HomeUiState.Error, vm.uiState.value)
         verify(locationDataSource).getCurrentLocation()
-        verify(weatherRepository, never()).getTodayByCoords(any(), any())
+        verifyNoInteractions(getTodayWeather)
     }
 
     @Test
-    fun `loadWeather - when repository returns Error, emits Error`() = runTest {
-        // Given
-        whenever(weatherRepository.observeSelectedCity())
-            .thenReturn(flowOf(SelectedCity("Saved", 1.0, 2.0)))
+    fun `loadWeather - no saved city, has permission, location ok, weather success - sets Success`() = runTest {
+        whenever(getSelectedCity()).thenReturn(null)
+        whenever(locationDataSource.hasLocationPermission()).thenReturn(true)
+        whenever(locationDataSource.getCurrentLocation())
+            .thenReturn(Result.success(LatLon(lat = 10.0, lon = 20.0)))
+        whenever(getTodayWeather(10.0, 20.0)).thenReturn(AppResult.Success(dummyCurrentWeather()))
 
-        whenever(weatherRepository.getTodayByCoords(1.0, 2.0))
-            .thenReturn(AppResult.Error(type = ErrorType.Http, message = "HTTP 401"))
+        val vm = createVm()
 
-        // When
-        viewModel = createViewModel()
+        vm.loadWeather()
         advanceUntilIdle()
 
-        viewModel.loadWeather()
-        advanceUntilIdle()
-
-        // Then
-        assertTrue(viewModel.uiState.value is HomeUiState.Error)
-        verify(weatherRepository).getTodayByCoords(1.0, 2.0)
-        verify(locationDataSource, never()).getCurrentLocation()
+        assertTrue(vm.uiState.value is HomeUiState.Success)
+        verify(getTodayWeather).invoke(10.0, 20.0)
     }
 
+    @Test
+    fun `onPermissionGranted - location ok and weather success - sets Success`() = runTest {
+        whenever(locationDataSource.getCurrentLocation())
+            .thenReturn(Result.success(LatLon(10.0, 20.0)))
+        whenever(getTodayWeather(10.0, 20.0)).thenReturn(AppResult.Success(dummyCurrentWeather()))
 
-    private fun sampleCurrentWeatherDto(city: String, lat: Double, lon: Double): CurrentWeatherDto =
-        CurrentWeatherDto(
-            coord = CoordDto(lon = lon, lat = lat),
-            weather = listOf(
-                WeatherDescriptionDto(
-                    id = 800,
-                    main = "Clear",
-                    description = "clear sky",
-                    icon = "01d"
-                )
-            ),
-            main = MainWeatherDto(
-                temp = 20.0,
-                feels_like = 19.0,
-                temp_min = 18.0,
-                temp_max = 22.0,
-                humidity = 50
-            ),
-            wind = WindDto(speed = 3.5),
-            clouds = CloudsDto(all = 10),
-            name = city,
-            dt = 1234567890L
+        val vm = createVm()
+
+        vm.onPermissionGranted()
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value is HomeUiState.Success)
+        verify(locationDataSource).getCurrentLocation()
+        verify(getTodayWeather).invoke(10.0, 20.0)
+    }
+
+    @Test
+    fun `onPermissionDenied - sets NeedsLocationPermission`() = runTest {
+        val vm = createVm()
+        vm.onPermissionDenied()
+        assertEquals(HomeUiState.NeedsLocationPermission, vm.uiState.value)
+    }
+
+    private fun dummyCurrentWeather(
+        cityName: String = "Barcelona"
+    ): CurrentWeather =
+        CurrentWeather(
+            cityName = cityName,
+            timestampSeconds = 1_700_000_000L,
+
+            temperatureC = 20.0,
+            feelsLikeC = 19.5,
+            tempMinC = 18.0,
+            tempMaxC = 22.0,
+
+            conditionDescription = "clear sky",
+            iconCode = "01d",
+            humidityPct = 60,
+            windSpeedMs = 3.5,
+            cloudsPct = 10
         )
 }

@@ -1,6 +1,7 @@
 package com.anahjanes.feature_weather.home.model
 
-import com.anahjanes.core.data.remote.dto.CurrentWeatherDto
+
+import com.anahjanes.core_domain.model.CurrentWeather
 import com.anahjanes.feature_weather.utils.toWeatherIconUrl
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -8,31 +9,26 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 
-fun CurrentWeatherDto.toHomeUiModel(): HomeUiModel {
-    val w = weather.firstOrNull()
-    val icon = w?.icon?.toWeatherIconUrl()
+fun CurrentWeather.toHomeUiModel(): HomeUiModel {
+    val iconUrl = iconCode?.toWeatherIconUrl()
 
-    val dateText = SimpleDateFormat(
-        "EEEE, d MMM",
-        Locale.ENGLISH
-    ).format(Date(dt * 1000))
+    val dateText = SimpleDateFormat("EEEE, d MMM", Locale.ENGLISH)
+        .format(Date(timestampSeconds * 1000))
 
-    val temp = main.temp.roundToInt()
-    val feels = main.feels_like.roundToInt()
-    val max = main.temp_max.roundToInt()
-    val min = main.temp_min.roundToInt()
+    val temp = temperatureC.roundToInt()
+    val feels = feelsLikeC.roundToInt()
+    val max = tempMaxC.roundToInt()
+    val min = tempMinC.roundToInt()
 
-    val cloudsPct = clouds?.all ?: 0
-    val humidityPct = main.humidity
-    val windKmh = (wind.speed * 3.6).roundToInt()
+    val windKmh = (windSpeedMs * 3.6).roundToInt()
 
     return HomeUiModel(
-        city = name,
+        city = cityName,
         dateText = dateText,
         temperature = "${temp}°",
-        condition = w?.description?.replaceFirstChar { it.uppercase() } ?: "-",
+        condition = conditionDescription?.replaceFirstChar { it.uppercase() } ?: "-",
         feelsLike = "${feels}°C",
-        iconUrl = icon,
+        iconUrl = iconUrl,
         tempMax = "${max}°",
         tempMin = "${min}°",
         clouds = "${cloudsPct}%",

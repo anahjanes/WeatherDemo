@@ -1,240 +1,288 @@
-package com.anahjanes.feature_weather.city
 
-import com.anahjanes.core.data.WeatherRepository
-import com.anahjanes.core.data.local.SelectedCity
-import com.anahjanes.core.data.remote.AppResult
-import com.anahjanes.core.data.remote.ErrorType
-import com.anahjanes.core.data.remote.dto.GeoCityDto
+import com.anahjanes.core_domain.model.AppResult
+import com.anahjanes.core_domain.model.CityResult
+import com.anahjanes.core_domain.model.ErrorType
+import com.anahjanes.core_domain.model.SelectedCity
+import com.anahjanes.core_domain.usecases.ObserveSelectedCityUseCase
+import com.anahjanes.core_domain.usecases.SaveCityUseCase
+import com.anahjanes.core_domain.usecases.SearchCitiesUseCase
 import com.anahjanes.feature_weather.MainDispatcherRule
+import com.anahjanes.feature_weather.city.CityViewModel
 import com.anahjanes.feature_weather.city.model.CityUiModel
-import com.anahjanes.feature_weather.city.model.toUiItem
 import com.anahjanes.feature_weather.location.LatLon
 import com.anahjanes.feature_weather.location.LocationDataSource
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
-import junit.framework.TestCase.assertTrue
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
-import org.junit.Before
+import kotlinx.coroutines.flow.flowOf
+import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
-import org.mockito.kotlin.any
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
+import app.cash.turbine.test
+import com.anahjanes.feature_weather.city.CityUiState
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 
-@OptIn(ExperimentalCoroutinesApi::class)
+
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
 class CityViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val repository: WeatherRepository = mock()
     private val locationDataSource: LocationDataSource = mock()
+
+    private val searchCitiesUseCase: SearchCitiesUseCase = mock()
+    private val observeSelectedCityUseCase: ObserveSelectedCityUseCase = mock()
+    private val saveCityUseCase: SaveCityUseCase = mock()
 
     private lateinit var viewModel: CityViewModel
 
-    // Para controlar el flow que emite la ciudad seleccionada
-    private val selectedCityFlow = MutableStateFlow<SelectedCity?>(null)
+    @Test
+    fun `init - when observeSelectedCity emits city with name - updates currentCity`() = runTest {
+        whenever(observeSelectedCityUseCase()).thenReturn(
+            flowOf(
+                SelectedCity(
+                    name = "Barcelona",
+                    lat = 1.0,
+                    lon = 2.0
+                )
+            )
+        )
 
-    @Before
-    fun setUp() {
-        whenever(repository.observeSelectedCity()).thenReturn(selectedCityFlow)
-        viewModel = CityViewModel(repository, locationDataSource)
+        viewModel = createVm()
+        advanceUntilIdle()
+
+        assertEquals("Barcelona", viewModel.uiState.value.currentCity)
     }
 
     @Test
-    fun `init - observes current city and updates currentCity in uiState`() = runTest {
-        // When
-        selectedCityFlow.value = SelectedCity(name = "Barcelona", lat = 1.0, lon = 2.0)
+    fun `init - when observeSelectedCity emits city with blank name - currentCity becomes null`() = runTest {
+        whenever(observeSelectedCityUseCase()).thenReturn(
+            flowOf(
+                SelectedCity(
+                    name = "   ",
+                    lat = 1.0,
+                    lon = 2.0
+                )
+            )
+        )
+
+        viewModel = createVm()
         advanceUntilIdle()
 
-        // Then
-        assertEquals("Barcelona", viewModel.uiState.value.currentCity)
-
-        // When (null clears)
-        selectedCityFlow.value = null
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(null, viewModel.uiState.value.currentCity)
-
-        verify(repository).observeSelectedCity()
+        assertNull(viewModel.uiState.value.currentCity)
     }
 
     @Test
     fun `onSearchQueryChanged - updates searchQuery and clears error`() = runTest {
+        whenever(observeSelectedCityUseCase()).thenReturn(flowOf(null))
+        whenever(searchCitiesUseCase("bar")).thenReturn(AppResult.Error(ErrorType.Network))
 
-        whenever(repository.searchCities(any(), any())).thenReturn(
-            AppResult.Error(type = ErrorType.Http, message = "boom")
-        )
+        viewModel = createVm()
 
-        viewModel.onSearchQueryChanged("abc")
+        // First force an error
+        viewModel.onSearchQueryChanged("bar")
         viewModel.searchCity()
         advanceUntilIdle()
-        assertEquals("boom", viewModel.uiState.value.error)
+
+        assertEquals("Unknown error", viewModel.uiState.value.error)
 
         // When
-        viewModel.onSearchQueryChanged("madrid")
+        viewModel.onSearchQueryChanged("bara")
         advanceUntilIdle()
 
         // Then
-        assertEquals("madrid", viewModel.uiState.value.searchQuery)
-        assertEquals(null, viewModel.uiState.value.error)
+        val state = viewModel.uiState.value
+        assertEquals("bara", state.searchQuery)
+        assertNull(state.error)
     }
 
     @Test
-    fun `searchCity - when query length less than 3, does nothing`() = runTest {
-        // Given
+    fun `searchCity - query shorter than 3 does nothing`() = runTest {
+        whenever(observeSelectedCityUseCase()).thenReturn(flowOf(null))
+
+        viewModel = createVm()
         viewModel.onSearchQueryChanged("ab")
         advanceUntilIdle()
 
-        // When
         viewModel.searchCity()
         advanceUntilIdle()
 
-        // Then
-        verify(repository, never()).searchCities(any(), any())
+        verifyNoInteractions(searchCitiesUseCase)
         assertFalse(viewModel.uiState.value.isSearching)
         assertTrue(viewModel.uiState.value.results.isEmpty())
+        assertNull(viewModel.uiState.value.error)
     }
 
     @Test
     fun `searchCity - success updates results and stops searching`() = runTest {
-        // Given
-        val results = listOf(
-            GeoCityDto(name = "Barcelona", lat = 41.38, lon = 2.17, country = "ES", state = "Catalunya"),
-            GeoCityDto(name = "Madrid", lat = 40.41, lon = -3.70, country = "ES", state = null),
+        whenever(observeSelectedCityUseCase()).thenReturn(flowOf(null))
+
+        val domainCities = listOf(
+            CityResult(name = "Barcelona", country = "ES", lat = 41.0, lon = 2.0),
+            CityResult(name = "Barakaldo", country = "ES", lat = 43.0, lon = -2.9),
         )
+        whenever(searchCitiesUseCase("bar")).thenReturn(AppResult.Success(domainCities))
 
-        whenever(repository.searchCities("bar", limit = 10))
-            .thenReturn(AppResult.Success(results))
-
+        viewModel = createVm()
         viewModel.onSearchQueryChanged("bar")
-        advanceUntilIdle()
 
-        // When
-        viewModel.searchCity()
-        advanceUntilIdle()
-        val expectedResults = results.map { it.toUiItem() }
+        viewModel.uiState.test {
+            awaitItem() // initial
 
-        // Then
-        val state = viewModel.uiState.value
-        assertFalse(state.isSearching)
-        assertEquals(expectedResults, state.results)
-        assertEquals(null, state.error)
+            viewModel.searchCity()
 
-        verify(repository).searchCities("bar", limit = 10)
+            // Consume emissions until searching finishes (StateFlow may skip intermediate searching=true)
+            var state: CityUiState
+            do {
+                state = awaitItem()
+            } while (state.isSearching)
+
+            assertNull(state.error)
+            assertEquals(2, state.results.size)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        verify(searchCitiesUseCase).invoke("bar")
     }
 
     @Test
-    fun `searchCity - error sets error message and stops searching`() = runTest {
-        // Given
-        whenever(repository.searchCities("bar", limit = 10))
-            .thenReturn(AppResult.Error(type = ErrorType.Http, message = "HTTP 500"))
+    fun `searchCity - error sets Unknown error and stops searching`() = runTest {
+        whenever(observeSelectedCityUseCase()).thenReturn(flowOf(null))
+        whenever(searchCitiesUseCase("bar")).thenReturn(AppResult.Error(ErrorType.Network))
 
+        viewModel = createVm()
         viewModel.onSearchQueryChanged("bar")
-        advanceUntilIdle()
 
-        // When
-        viewModel.searchCity()
-        advanceUntilIdle()
+        viewModel.uiState.test {
+            awaitItem() // initial
 
-        // Then
-        val state = viewModel.uiState.value
-        assertFalse(state.isSearching)
-        assertEquals("HTTP 500", state.error)
-        assertTrue(state.results.isEmpty())
+            viewModel.searchCity()
+
+            var state: CityUiState
+            do {
+                state = awaitItem()
+            } while (state.isSearching)
+
+            assertEquals("Unknown error", state.error)
+            assertTrue(state.results.isEmpty())
+
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        verify(searchCitiesUseCase).invoke("bar")
     }
 
     @Test
-    fun `onCitySelected - saves selected city with built name and sets citySelected true, clears query`() = runTest {
-        // Given
-        val city = CityUiModel(
+    fun `onCitySelected - saves city with built name and updates ui flags`() = runTest {
+        whenever(observeSelectedCityUseCase()).thenReturn(flowOf(null))
+        viewModel = createVm()
+
+        val uiCity = CityUiModel(
             name = "Barcelona",
             country = "ES",
-            lat = 41.38,
-            lon = 2.17
+            lat = 41.3874,
+            lon = 2.1686
         )
 
-        // When
-        viewModel.onSearchQueryChanged("bar")
-        viewModel.onCitySelected(city)
+        viewModel.onCitySelected(uiCity)
         advanceUntilIdle()
 
-        // Then
-        val expectedName = "Barcelona, ES"
-        verify(repository).saveCity(
-            SelectedCity(
-                name = expectedName,
-                lat = 41.38,
-                lon = 2.17
+        val captor = argumentCaptor<SelectedCity>()
+        verify(saveCityUseCase).invoke(captor.capture())
+
+        val saved = captor.firstValue
+        assertEquals("Barcelona, ES", saved.name)
+        assertEquals(41.3874, saved.lat, 0.0001)
+        assertEquals(2.1686, saved.lon, 0.0001)
+
+        val state = viewModel.uiState.value
+        assertEquals("", state.searchQuery)
+        assertTrue(state.citySelected)
+    }
+
+    @Test
+    fun `onUseCurrentLocation - success saves blank name city and updates ui flags`() = runTest {
+        whenever(observeSelectedCityUseCase()).thenReturn(flowOf(null))
+
+        whenever(locationDataSource.getCurrentLocation()).thenReturn(
+            Result.success(
+                LatLon(
+                    lat = 10.0,
+                    lon = 20.0
+                )
             )
         )
 
+        viewModel = createVm()
+
+        viewModel.onUseCurrentLocation()
+        advanceUntilIdle()
+
+        val captor = argumentCaptor<SelectedCity>()
+        verify(saveCityUseCase).invoke(captor.capture())
+
+        val saved = captor.firstValue
+        assertEquals("", saved.name)
+        assertEquals(10.0, saved.lat, 0.0001)
+        assertEquals(20.0, saved.lon, 0.0001)
+
         val state = viewModel.uiState.value
         assertEquals("", state.searchQuery)
         assertTrue(state.citySelected)
     }
 
     @Test
-    fun `onUseCurrentLocation - success saves city with empty name and sets citySelected true, clears query`() = runTest {
-        // Given
-        whenever(locationDataSource.getCurrentLocation())
-            .thenReturn(Result.success(LatLon(lat = 41.38, lon = 2.17)))
+    fun `onUseCurrentLocation - failure does not save and does not set citySelected`() = runTest {
+        whenever(observeSelectedCityUseCase()).thenReturn(flowOf(null))
 
-        viewModel.onSearchQueryChanged("bar")
-        advanceUntilIdle()
-
-        // When
-        viewModel.onUseCurrentLocation()
-        advanceUntilIdle()
-
-        // Then
-        verify(locationDataSource).getCurrentLocation()
-        verify(repository).saveCity(
-            SelectedCity(name = "", lat = 41.38, lon = 2.17)
+        whenever(locationDataSource.getCurrentLocation()).thenReturn(
+            Result.failure(IllegalStateException("no loc"))
         )
 
-        val state = viewModel.uiState.value
-        assertEquals("", state.searchQuery)
-        assertTrue(state.citySelected)
-    }
+        viewModel = createVm()
 
-    @Test
-    fun `onUseCurrentLocation - failure does not save city and does not mark citySelected`() = runTest {
-        // Given
-        whenever(locationDataSource.getCurrentLocation())
-            .thenReturn(Result.failure(IllegalStateException("no gps")))
-
-        // When
         viewModel.onUseCurrentLocation()
         advanceUntilIdle()
 
-        // Then
-        verify(locationDataSource).getCurrentLocation()
-        verify(repository, never()).saveCity(any())
-
+        verify(saveCityUseCase, never()).invoke(any())
         assertFalse(viewModel.uiState.value.citySelected)
     }
 
     @Test
-    fun `onNavigationHandled - resets citySelected to false`() = runTest {
-        // Given: forzamos citySelected=true seleccionando una ciudad
-        val city =
-            CityUiModel(name = "Madrid",  country = "ES", lat = 40.41, lon = -3.70)
-        viewModel.onCitySelected(city)
+    fun `onNavigationHandled - resets citySelected and clears results`() = runTest {
+        whenever(observeSelectedCityUseCase()).thenReturn(flowOf(null))
+        viewModel = createVm()
+
+        viewModel.onSearchQueryChanged("bar")
+
+        whenever(searchCitiesUseCase("bar")).thenReturn(
+            AppResult.Success(listOf(CityResult("Barcelona", "ES", 1.0, 2.0)))
+        )
+
+        viewModel.searchCity()
         advanceUntilIdle()
+
+        viewModel.onCitySelected(CityUiModel("Barcelona", "ES", 1.0, 2.0))
+        advanceUntilIdle()
+
         assertTrue(viewModel.uiState.value.citySelected)
+        assertTrue(viewModel.uiState.value.results.isNotEmpty())
 
-        // When
         viewModel.onNavigationHandled()
-        advanceUntilIdle()
 
-        // Then
-        assertFalse(viewModel.uiState.value.citySelected)
+        val state = viewModel.uiState.value
+        assertFalse(state.citySelected)
+        assertTrue(state.results.isEmpty())
     }
+
+    private fun createVm(): CityViewModel =
+        CityViewModel(
+            searchCitiesUseCase = searchCitiesUseCase,
+            observeSelectedCityUseCase = observeSelectedCityUseCase,
+            saveCityUseCase = saveCityUseCase,
+            locationDataSource = locationDataSource,
+        )
 }

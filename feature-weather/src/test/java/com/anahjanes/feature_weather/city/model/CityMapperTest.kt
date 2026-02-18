@@ -1,15 +1,15 @@
 package com.anahjanes.feature_weather.city.model
 
-import com.anahjanes.core.data.remote.dto.GeoCityDto
+import com.anahjanes.core_domain.model.CityResult
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class CityMapperTest {
 
     @Test
-    fun `toUiItem should map GeoCityDto to CityUiModel correctly`() {
+    fun `toUiItem should map  to CityUiModel correctly`() {
         // Given
-        val geoCityDto = GeoCityDto(
+        val cityResult = CityResult(
             name = "London",
             country = "GB",
             lat = 51.5074,
@@ -17,7 +17,7 @@ class CityMapperTest {
         )
 
         // When
-        val cityUiModel = geoCityDto.toUiItem()
+        val cityUiModel = cityResult.toUiItem()
 
         // Then
         assertEquals("London", cityUiModel.name)

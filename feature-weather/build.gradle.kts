@@ -46,8 +46,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":core"))
-
+    implementation(project(":core-domain"))
     // Compose UI
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -79,6 +78,7 @@ dependencies {
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.cash.turbine)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

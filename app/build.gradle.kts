@@ -52,8 +52,9 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
-    implementation(project(":core"))
+    implementation(project(":core-data"))
     implementation(project(":feature-weather"))
+    implementation(project(":core-domain"))
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))

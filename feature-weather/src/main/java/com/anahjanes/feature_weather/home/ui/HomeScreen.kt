@@ -22,7 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.anahjanes.core.data.local.SelectedCity
+import com.anahjanes.core_domain.model.SelectedCity
 import com.anahjanes.feature_weather.R
 import com.anahjanes.feature_weather.components.ErrorScreen
 import com.anahjanes.feature_weather.components.ProgressScreen
