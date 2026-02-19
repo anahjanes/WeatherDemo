@@ -1,6 +1,5 @@
 package com.anahjanes.feature_weather.home.ui
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,7 +21,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.anahjanes.core_domain.model.SelectedCity
 import com.anahjanes.feature_weather.R
 import com.anahjanes.feature_weather.components.ErrorScreen
 import com.anahjanes.feature_weather.components.ProgressScreen
@@ -40,18 +38,17 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Manejo del permiso de ubicación
+
     val locationPermission = rememberLocationPermissionHandler(
         onPermissionGranted = { viewModel.onPermissionGranted() },
         onPermissionDenied = { viewModel.onPermissionDenied() }
     )
 
-    // Primera carga
     LaunchedEffect(Unit) {
         viewModel.loadWeather()
     }
 
-    // Escuchamos eventos one-shot
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -62,7 +59,7 @@ fun HomeScreen(
         }
     }
 
-    // Contenido principal según estado
+
     HomeScreenContent(
         uiState = uiState,
         onOpenCity = onOpenCity,
