@@ -5,7 +5,6 @@ import com.anahjanes.core_domain.model.SelectedCity
 import com.anahjanes.core.data.mapper.toModel
 import com.anahjanes.core_domain.model.AppResult
 import com.anahjanes.core_domain.model.ErrorType
-import com.anahjanes.core.data.remote.dto.GeoCityDto
 import com.anahjanes.core.data.remote.WeatherApi
 import com.anahjanes.core_domain.model.CityResult
 import com.anahjanes.core_domain.model.CurrentWeather
@@ -28,7 +27,7 @@ private suspend fun <T> safeCall(block: suspend () -> T): AppResult<T> =
         AppResult.Error(ErrorType.Unknown, e.message, e)
     }
 
-class WeatherRepositoryImpl @Inject constructor(
+internal class WeatherRepositoryImpl @Inject constructor(
     private val api: WeatherApi,
     private val cityPreferences: CityPreferencesDataSource,
 ) : WeatherRepository {

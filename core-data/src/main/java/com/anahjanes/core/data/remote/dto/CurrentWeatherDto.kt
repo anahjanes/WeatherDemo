@@ -1,7 +1,7 @@
 package com.anahjanes.core.data.remote.dto
 
 
-data class CurrentWeatherDto(
+internal data class CurrentWeatherDto(
     val coord: CoordDto,
     val weather: List<WeatherDescriptionDto>,
     val main: MainWeatherDto,
@@ -10,22 +10,22 @@ data class CurrentWeatherDto(
     val dt: Long,
     val clouds: CloudsDto?
 )
-data class CloudsDto(val all: Int)
+internal data class CloudsDto(val all: Int)
 
 
-data class CoordDto(
+internal data class CoordDto(
     val lon: Double,
     val lat: Double
 )
 
-data class WeatherDescriptionDto(
+internal data class WeatherDescriptionDto(
     val id: Int,
     val main: String,
     val description: String,
     val icon: String
 )
 
-data class MainWeatherDto(
+internal data class MainWeatherDto(
     val temp: Double,
     val feels_like: Double,
     val temp_min: Double,
@@ -33,6 +33,6 @@ data class MainWeatherDto(
     val humidity: Int
 )
 
-data class WindDto(
+internal data class WindDto(
     val speed: Double
 )

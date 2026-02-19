@@ -70,6 +70,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideWeatherApi(retrofit: Retrofit): WeatherApi =
+   internal fun provideWeatherApi(retrofit: Retrofit): WeatherApi =
         retrofit.create(WeatherApi::class.java)
 }

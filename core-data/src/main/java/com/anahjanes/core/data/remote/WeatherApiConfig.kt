@@ -1,6 +1,6 @@
 package com.anahjanes.core.data.remote
 
-object WeatherApiConfig {
+internal object WeatherApiConfig {
     const val UNITS = "metric"
     const val LANG = "en"
 }

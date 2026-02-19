@@ -1,6 +1,6 @@
 package com.anahjanes.core.data.remote.dto
 
-data class WeekWeatherDto(
+internal data class WeekWeatherDto(
     val city: City,
     val cnt: Int,
     val cod: String,
@@ -8,7 +8,7 @@ data class WeekWeatherDto(
     val message: Int
 )
 
-data class ForecastItem(
+internal data class ForecastItem(
     val clouds: Clouds,
     val dt: Int,
     val dt_txt: String,
@@ -20,9 +20,9 @@ data class ForecastItem(
     val weather: List<Weather>,
     val wind: Wind
 )
- fun ForecastItem.dayKey(): String = dt_txt.substring(0, 10)
+internal fun ForecastItem.dayKey(): String = dt_txt.substring(0, 10)
 
-data class City(
+internal data class City(
     val coord: Coord,
     val country: String,
     val id: Int,
@@ -33,19 +33,19 @@ data class City(
     val timezone: Int
 )
 
-data class Weather(
+internal data class Weather(
     val description: String,
     val icon: String,
     val id: Int,
     val main: String
 )
 
-data class Coord(
+internal data class Coord(
     val lat: Double,
     val lon: Double
 )
 
-data class Main(
+internal data class Main(
     val feels_like: Double,
     val grnd_level: Int,
     val humidity: Int,
@@ -57,17 +57,17 @@ data class Main(
     val temp_min: Double
 )
 
-data class Sys(
+internal data class Sys(
     val pod: String
 )
-data class Rain(
+internal data class Rain(
     val `3h`: Double
 )
-data class Clouds(
+internal data class Clouds(
     val all: Int
 )
 
-data class Wind(
+internal data class Wind(
     val deg: Int,
     val gust: Double,
     val speed: Double

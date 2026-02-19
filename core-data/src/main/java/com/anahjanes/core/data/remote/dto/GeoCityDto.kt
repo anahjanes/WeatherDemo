@@ -1,7 +1,7 @@
 package com.anahjanes.core.data.remote.dto
 
 
-data class GeoCityDto(
+internal data class GeoCityDto(
     val name: String,
     val lat: Double,
     val lon: Double,

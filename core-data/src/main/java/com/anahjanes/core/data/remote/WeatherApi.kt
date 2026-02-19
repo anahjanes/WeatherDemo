@@ -6,7 +6,7 @@ import com.anahjanes.core.data.remote.dto.WeekWeatherDto
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface WeatherApi {
+internal interface WeatherApi {
 
     @GET("data/2.5/weather")
     suspend fun getCurrentWeatherByCoords(
